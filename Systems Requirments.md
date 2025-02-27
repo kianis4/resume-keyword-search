@@ -3,30 +3,30 @@
 ### High-Level System Architecture (Flowchart)
 ```mermaid
 flowchart LR
-    A(User) -->|1. Paste JD| B(Next.js Frontend)
-    B -->|2. Send to /api/parseJD| C(Next.js API Routes)
-    C -->|3. Extract keywords w/ OpenAI| D(OpenAI LLM)
+    A(User) --> B(Next.js Frontend): "1. Paste JD"
+    B --> C(Next.js API Routes): "2. Send to /api/parseJD"
+    C --> D(OpenAI LLM): "3. Extract keywords w/ OpenAI"
     D --> C
-    C -->|4. Return keywords| B
+    C --> B: "4. Return keywords"
     
-    B -->|5. Send keywords to /api/scoreResume| C2(Next.js API Routes)
-    C2 -->|6. Compare each .tex| E[.tex Resume Files]
+    B --> C2(Next.js API Routes): "5. Send keywords to /api/scoreResume"
+    C2 --> E[.tex Resume Files]: "6. Compare each .tex"
     E --> C2
-    C2 -->|7. Return best match| B
+    C2 --> B: "7. Return best match"
     
-    B -->|8. User opts to customize resume| F(Next.js API Routes /api/customizeResume)
-    F -->|9. Generate bullet suggestions w/ OpenAI| D2(OpenAI LLM)
+    B --> F(Next.js API Routes /api/customizeResume): "8. User opts to customize resume"
+    F --> D2(OpenAI LLM): "9. Generate bullet suggestions w/ OpenAI"
     D2 --> F
-    F -->|10. Return suggestions| B
+    F --> B: "10. Return suggestions"
 
-    B -->|11. Accept changes -> /api/applyEdits| G(Apply Edits to .tex)
+    B --> G(Apply Edits to .tex): "11. Accept changes -> /api/applyEdits"
     G --> E
     E --> G
-    G -->|12. Return updated .tex| B
+    G --> B: "12. Return updated .tex"
 
-    B -->|13. /api/compilePDF| H(LaTeX Compiler)
-    H -->|14. Produce PDF| I[Final PDF]
-    I -->|15. Download| A
+    B --> H(LaTeX Compiler): "13. /api/compilePDF"
+    H --> I[Final PDF]: "14. Produce PDF"
+    I --> A: "15. Download"
 ```
 **Explanation**:
 - User pastes the job description (JD) into the Next.js Frontend.
