@@ -1,5 +1,141 @@
 ## 2. System Requirements Document
 
+### High-Level System Architecture (Flowchart)
+```mermaid
+flowchart LR
+    A(User) -->|1. Paste JD| B(Next.js Frontend)
+    B -->|2. Send to /api/parseJD| C(Next.js API Routes)
+    C -->|3. Extract keywords w/ OpenAI| D(OpenAI LLM)
+    D --> C
+    C -->|4. Return keywords| B
+    
+    B -->|5. Send keywords to /api/scoreResume| C2(Next.js API Routes)
+    C2 -->|6. Compare each .tex| E[.tex Resume Files]
+    E --> C2
+    C2 -->|7. Return best match| B
+    
+    B -->|8. User opts to customize resume| F(Next.js API Routes /api/customizeResume)
+    F -->|9. Generate bullet suggestions w/ OpenAI| D2(OpenAI LLM)
+    D2 --> F
+    F -->|10. Return suggestions| B
+
+    B -->|11. Accept changes -> /api/applyEdits| G(Apply Edits to .tex)
+    G --> E
+    E --> G
+    G -->|12. Return updated .tex| B
+
+    B -->|13. /api/compilePDF| H(LaTeX Compiler)
+    H -->|14. Produce PDF| I[Final PDF]
+    I -->|15. Download| A
+```
+**Explanation**:
+- User pastes the job description (JD) into the Next.js Frontend.
+- The frontend calls the parseJD API route, which uses OpenAI to extract keywords/skills.
+- The scoreResume API checks those keywords against local .tex files to pick the best fit.
+- The user optionally calls the customizeResume API, which again leverages OpenAI to generate bullet-point suggestions.
+- The user approves or rejects changes, which are then applied to the relevant .tex file.
+- Finally, the system compiles the updated .tex into a PDF, which the user downloads.
+
+### Main User Flow (Sequence Diagram)
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend as Next.js Frontend
+    participant ParseAPI as /api/parseJD
+    participant ScoreAPI as /api/scoreResume
+    participant CustomizeAPI as /api/customizeResume
+    participant ApplyAPI as /api/applyEdits
+    participant CompileAPI as /api/compilePDF
+    participant OpenAI as OpenAI LLM
+    participant Resumes as .tex Files
+    participant PDF as Compiled PDF
+
+    User->>Frontend: 1. Paste Job Description
+    Frontend->>ParseAPI: 2. POST jobDescription
+    ParseAPI->>OpenAI: 3. Extract keywords (ChatCompletion)
+    OpenAI-->>ParseAPI: 4. Return parsed keywords
+    ParseAPI-->>Frontend: 5. Return keywords
+
+    Frontend->>ScoreAPI: 6. POST keywords
+    ScoreAPI->>Resumes: 7. Compare text in .tex files
+    ScoreAPI-->>Frontend: 8. Return best matching resume
+
+    User->>Frontend: 9. Click "Customize Resume"
+    Frontend->>CustomizeAPI: 10. POST { resumeFile, keywords, JD }
+    CustomizeAPI->>OpenAI: 11. Generate bullet suggestions
+    OpenAI-->>CustomizeAPI: 12. Return suggestions
+    CustomizeAPI-->>Frontend: 13. Return suggestions
+
+    User->>Frontend: 14. Approve/reject bullet edits
+    Frontend->>ApplyAPI: 15. POST acceptedEdits
+    ApplyAPI->>Resumes: 16. Apply changes in .tex
+    ApplyAPI-->>Frontend: 17. Confirm updated .tex
+
+    Frontend->>CompileAPI: 18. POST resumeFile to compile
+    CompileAPI->>Resumes: 19. Read updated .tex
+    CompileAPI-->>PDF: 20. Build final PDF
+    CompileAPI-->>Frontend: 21. Return PDF (binary or base64)
+
+    Frontend-->>User: 22. Download final single-page resume
+```
+**Explanation**:
+- Shows step-by-step interactions from the moment the user pastes a JD, through OpenAI calls, to final PDF delivery.
+- Highlights how each Next.js API route plays a distinct role (parse, score, customize, apply edits, compile).
+
+### Component Breakdown (Flowchart with Emphasis on Modules)
+```mermaid
+flowchart TB
+    subgraph Next.js Frontend
+        UI1(User Text Input)
+        UI2(Display Scores & Suggestions)
+        UI3(Download PDF Button)
+    end
+
+    subgraph Next.js API Routes
+        PJD[/api/parseJD\nExtract JD keywords/skills/requirements/]
+        SR[/api/scoreResume\nCompare .tex files against keywords/]
+        CR[/api/customizeResume\nGenerate bullet suggestions with OpenAI/]
+        AE[/api/applyEdits\nApply bullet changes to .tex/]
+        CP[/api/compilePDF\nRun LaTeX compilation/]
+    end
+
+    subgraph Infrastructure
+        OAI[OpenAI GPT\n<ChatCompletion>]
+        TEX[.tex Resume Templates\n(DevOps, Fullstack, etc.)]
+        LXC[LaTeX Compiler]
+    end
+
+    UI1 --> PJD
+    PJD --> OAI
+    OAI --> PJD
+    PJD --> UI2
+
+    UI2 --> SR
+    SR --> TEX
+    SR --> UI2
+
+    UI2 --> CR
+    CR --> OAI
+    OAI --> CR
+    CR --> UI2
+
+    UI2 --> AE
+    AE --> TEX
+    AE --> UI2
+
+    UI2 --> CP
+    CP --> LXC
+    LXC --> CP
+    CP --> UI3
+```
+**Explanation**:
+- The Frontend has three major UI pieces: text input for the JD, an area to display results (scores, suggestions), and a final PDF download button.
+- API Routes handle each discrete piece of logic: parse, score, customize, edit, compile.
+- Infrastructure includes OpenAI for LLM tasks, your .tex files, and a LaTeX compiler to produce the PDF.
+
+
+
+
 ### 2.1 Functional Requirements
 
 #### 2.1.1 Job Description Input & Parsing
