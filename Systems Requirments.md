@@ -86,23 +86,23 @@ sequenceDiagram
 ```mermaid
 flowchart TB
     subgraph Next.js Frontend
-        UI1(User Text Input)
-        UI2(Display Scores & Suggestions)
-        UI3(Download PDF Button)
+        UI1["User Text Input"]
+        UI2["Display Scores & Suggestions"]
+        UI3["Download PDF Button"]
     end
 
     subgraph Next.js API Routes
-        PJD[/api/parseJD\nExtract JD keywords/skills/requirements/]
-        SR[/api/scoreResume\nCompare .tex files against keywords/]
-        CR[/api/customizeResume\nGenerate bullet suggestions with OpenAI/]
-        AE[/api/applyEdits\nApply bullet changes to .tex/]
-        CP[/api/compilePDF\nRun LaTeX compilation/]
+        PJD["/api/parseJD<br>Extract JD keywords"]
+        SR["/api/scoreResume<br>Compare .tex files to keywords"]
+        CR["/api/customizeResume<br>Generate bullet suggestions"]
+        AE["/api/applyEdits<br>Apply bullet changes"]
+        CP["/api/compilePDF<br>Run LaTeX compiler"]
     end
 
     subgraph Infrastructure
-        OAI[OpenAI GPT\n<ChatCompletion>]
-        TEX[.tex Resume Templates\n(DevOps, Fullstack, etc.)]
-        LXC[LaTeX Compiler]
+        OAI["OpenAI GPT<br>LLM calls"]
+        TEX[".tex Resume Templates<br>DevOps, Fullstack, Backend, etc."]
+        LXC["LaTeX Compiler"]
     end
 
     UI1 --> PJD
