@@ -28,71 +28,71 @@
 ### Tasks
 
 1. **Create a GitHub Repo**
-     - Name: resume-tailoring-system.
-     - Clone it locally.
+    - Name: resume-tailoring-system.
+    - Clone it locally.
 
 2. **Initialize Next.js App**
-     ```bash
-     npx create-next-app resume-tailoring-system
-     cd resume-tailoring-system
-     git add .
-     git commit -m "chore: initial next.js setup"
-     git push origin main
-     ```
-     - Run `npm run dev` (or `yarn dev`) and confirm the starter project opens at http://localhost:3000.
+    ```bash
+    npx create-next-app resume-tailoring-system
+    cd resume-tailoring-system
+    git add .
+    git commit -m "chore: initial next.js setup"
+    git push origin main
+    ```
+    - Run `npm run dev` (or `yarn dev`) and confirm the starter project opens at http://localhost:3000.
 
 3. **Configure Environment Variables**
-     - Create a file `.env.local` in the project root:
-         ```bash
-         OPENAI_API_KEY="sk-123..."
-         ```
-     - Add `.env.local` to `.gitignore` so you don’t expose your secret key on GitHub.
+    - Create a file `.env.local` in the project root:
+        ```bash
+        OPENAI_API_KEY="sk-123..."
+        ```
+    - Add `.env.local` to `.gitignore` so you don’t expose your secret key on GitHub.
 
 4. **Project File Structure**
-     - Within `resume-tailoring-system/`, create the following structure:
-         ```bash
-         /resumes           # place .tex files here
-             devops.tex
-             fullstack.tex
-             backend.tex
-             frontend.tex
-             aiml.tex
+    - Within `resume-tailoring-system/`, create the following structure:
+        ```bash
+        /resumes           # place .tex files here
+           devops.tex
+           fullstack.tex
+           backend.tex
+           frontend.tex
+           aiml.tex
 
-         /pages
-             /api             # Next.js API routes
-                 parseJD.js
-                 scoreResume.js
-                 customizeResume.js
-                 compilePDF.js
-                 ...
-             index.js         # or /app/page.js if using App Router
+        /pages
+           /api             # Next.js API routes
+              parseJD.js
+              scoreResume.js
+              customizeResume.js
+              compilePDF.js
+              ...
+           index.js         # or /app/page.js if using App Router
 
-         /lib               # utility files
-             openaiClient.js  # for OpenAI config
-             latexCompiler.js # for LaTeX compilation logic
-             ...
-         ```
-     - Copy your five .tex resume templates into `/resumes`.
+        /lib               # utility files
+           openaiClient.js  # for OpenAI config
+           latexCompiler.js # for LaTeX compilation logic
+           ...
+        ```
+    - Copy your five .tex resume templates into `/resumes`.
 
 5. **Initialize OpenAI Client (in /lib/openaiClient.js)**
-     ```javascript
-     import { Configuration, OpenAIApi } from "openai";
+    ```javascript
+    import { Configuration, OpenAIApi } from "openai";
 
-     const configuration = new Configuration({
-         apiKey: process.env.OPENAI_API_KEY,
-     });
+    const configuration = new Configuration({
+        apiKey: process.env.OPENAI_API_KEY,
+    });
 
-     const openai = new OpenAIApi(configuration);
+    const openai = new OpenAIApi(configuration);
 
-     export default openai;
-     ```
+    export default openai;
+    ```
 
 6. **Commit & Push**
-     ```bash
-     git add .
-     git commit -m "feat: project structure and openAI config"
-     git push origin main
-     ```
+    ```bash
+    git add .
+    git commit -m "feat: project structure and openAI config"
+    git push origin main
+    ```
 
 **End of Day 1:**
 You’ll have a Next.js project set up with your .tex files in place, environment variables for OpenAI, and a structure ready for API route implementations.
@@ -102,100 +102,100 @@ You’ll have a Next.js project set up with your .tex files in place, environmen
 ### Tasks
 
 1. **Job Description UI**
-     - Edit `pages/index.js` (or `/app/page.js`, but let’s assume the classic Pages Router).
-     - Create a basic form with a `<textarea>` and a “Parse Job Description” button:
-         ```jsx
-         import { useState } from 'react';
+    - Edit `pages/index.js` (or `/app/page.js`, but let’s assume the classic Pages Router).
+    - Create a basic form with a `<textarea>` and a “Parse Job Description” button:
+        ```jsx
+        import { useState } from 'react';
 
-         export default function Home() {
-             const [jobDesc, setJobDesc] = useState('');
-             const [parsedData, setParsedData] = useState(null);
+        export default function Home() {
+           const [jobDesc, setJobDesc] = useState('');
+           const [parsedData, setParsedData] = useState(null);
 
-             async function handleParseJD() {
-                 const response = await fetch('/api/parseJD', {
-                     method: 'POST',
-                     headers: { 'Content-Type': 'application/json' },
-                     body: JSON.stringify({ jobDescription: jobDesc }),
-                 });
-                 const data = await response.json();
-                 setParsedData(data);
-             }
+           async function handleParseJD() {
+              const response = await fetch('/api/parseJD', {
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ jobDescription: jobDesc }),
+              });
+              const data = await response.json();
+              setParsedData(data);
+           }
 
-             return (
-                 <div style={{ padding: '1rem' }}>
-                     <h1>Resume Tailoring System</h1>
-                     <textarea
-                         value={jobDesc}
-                         onChange={(e) => setJobDesc(e.target.value)}
-                         rows={10}
-                         cols={50}
-                     />
-                     <br />
-                     <button onClick={handleParseJD}>Parse Job Description</button>
+           return (
+              <div style={{ padding: '1rem' }}>
+                 <h1>Resume Tailoring System</h1>
+                 <textarea
+                    value={jobDesc}
+                    onChange={(e) => setJobDesc(e.target.value)}
+                    rows={10}
+                    cols={50}
+                 />
+                 <br />
+                 <button onClick={handleParseJD}>Parse Job Description</button>
 
-                     {parsedData && (
-                         <div>
-                             <h2>Parsed Data</h2>
-                             <pre>{JSON.stringify(parsedData, null, 2)}</pre>
-                         </div>
-                     )}
-                 </div>
-             );
-         }
-         ```
+                 {parsedData && (
+                    <div>
+                        <h2>Parsed Data</h2>
+                        <pre>{JSON.stringify(parsedData, null, 2)}</pre>
+                    </div>
+                 )}
+              </div>
+           );
+        }
+        ```
 
 2. **/api/parseJD.js (NLP Extraction with OpenAI)**
-     - Create `pages/api/parseJD.js`:
-         ```jsx
-         import openai from '../../lib/openaiClient';
+    - Create `pages/api/parseJD.js`:
+        ```jsx
+        import openai from '../../lib/openaiClient';
 
-         export default async function handler(req, res) {
-             const { jobDescription } = req.body;
+        export default async function handler(req, res) {
+           const { jobDescription } = req.body;
 
-             if (!jobDescription) {
-                 return res.status(400).json({ error: 'No job description provided' });
-             }
+           if (!jobDescription) {
+              return res.status(400).json({ error: 'No job description provided' });
+           }
 
-             try {
-                 const prompt = `Extract the key skills, technologies, and important requirements from the following job description:\n\n"${jobDescription}"\n\nPlease return them in a JSON array of strings.`;
+           try {
+              const prompt = `Extract the key skills, technologies, and important requirements from the following job description:\n\n"${jobDescription}"\n\nPlease return them in a JSON array of strings.`;
 
-                 const response = await openai.createChatCompletion({
-                     model: 'gpt-3.5-turbo',
-                     messages: [
-                         { role: 'system', content: 'You are a helpful assistant.' },
-                         { role: 'user', content: prompt },
-                     ],
-                     temperature: 0.0,
-                 });
+              const response = await openai.createChatCompletion({
+                 model: 'gpt-3.5-turbo',
+                 messages: [
+                    { role: 'system', content: 'You are a helpful assistant.' },
+                    { role: 'user', content: prompt },
+                 ],
+                 temperature: 0.0,
+              });
 
-                 const content = response.data.choices[0].message.content;
+              const content = response.data.choices[0].message.content;
 
-                 let extractedKeywords;
-                 try {
-                     extractedKeywords = JSON.parse(content);
-                 } catch (err) {
-                     extractedKeywords = [content];
-                 }
+              let extractedKeywords;
+              try {
+                 extractedKeywords = JSON.parse(content);
+              } catch (err) {
+                 extractedKeywords = [content];
+              }
 
-                 return res.status(200).json({ keywords: extractedKeywords });
-             } catch (error) {
-                 console.error(error);
-                 return res.status(500).json({ error: 'Error parsing job description.' });
-             }
-         }
-         ```
+              return res.status(200).json({ keywords: extractedKeywords });
+           } catch (error) {
+              console.error(error);
+              return res.status(500).json({ error: 'Error parsing job description.' });
+           }
+        }
+        ```
 
 3. **Test Parsing**
-     - Run `npm run dev`.
-     - Open http://localhost:3000, paste a sample job description, click “Parse Job Description”.
-     - Verify you get a JSON array of key terms.
+    - Run `npm run dev`.
+    - Open http://localhost:3000, paste a sample job description, click “Parse Job Description”.
+    - Verify you get a JSON array of key terms.
 
 4. **Commit & Push**
-     ```bash
-     git add .
-     git commit -m "feat: job description parsing with openAI"
-     git push origin main
-     ```
+    ```bash
+    git add .
+    git commit -m "feat: job description parsing with openAI"
+    git push origin main
+    ```
 
 **End of Day 2:**
 Now you have a UI to paste a JD and an API endpoint that uses OpenAI to return extracted keywords, skills, and requirements.
