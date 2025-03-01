@@ -28,7 +28,7 @@ export async function POST(request) {
 
     const completion = await openai.chat.completions.create({
       // "gpt-4o" or "gpt-3.5-turbo"
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       // Slightly increase temperature to allow more expansive listing
       temperature: 0.3, 

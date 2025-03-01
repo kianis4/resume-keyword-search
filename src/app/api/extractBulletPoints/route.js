@@ -71,7 +71,7 @@ export async function GET(request) {
     `;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // or "gpt-4"
+      model: "gpt-4o", // or "gpt-4"
       messages: [{ role: "user", content: prompt }],
       temperature: 0.2,
       max_tokens: 800,
