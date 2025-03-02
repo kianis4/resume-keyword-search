@@ -22,6 +22,9 @@ export default function HomePage() {
   // Holds updated LaTeX from the server
   const [updatedLatex, setUpdatedLatex] = useState("");
 
+  // Holds the chosen filename
+  const [chosenFilename, setChosenFilename] = useState("devops.tex");
+
   // 1) Parse & Score JD
   async function handleParseAndScore() {
     setLoading(true);
@@ -59,6 +62,7 @@ export default function HomePage() {
     setLoadingExperiences(true);
     try {
       const file = scoreResults.bestResume.file;
+      setChosenFilename(file); // Set the chosen filename based on the best resume file
       const response = await fetch(`/api/extractBulletPoints?file=${file}`);
       const data = await response.json();
       if (data.experiences && Array.isArray(data.experiences)) {
@@ -151,7 +155,7 @@ export default function HomePage() {
       const response = await fetch("/api/customizeResume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ acceptedChanges: acceptedExperienceChanges }),
+        body: JSON.stringify({ acceptedChanges: acceptedExperienceChanges, filename: chosenFilename }),
       });
       const data = await response.json();
       if (data.error) {
