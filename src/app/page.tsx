@@ -1,5 +1,3 @@
-// /src/app/page.tsx
-// /src/app/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -20,6 +18,9 @@ export default function HomePage() {
   const [currentBulletChangeIndex, setCurrentBulletChangeIndex] = useState(0);
   const [acceptedExperienceChanges, setAcceptedExperienceChanges] = useState<any[]>([]);
   const [customizationFlow, setCustomizationFlow] = useState<"idle" | "inProgress" | "completed">("idle");
+
+  // Holds updated LaTeX from the server
+  const [updatedLatex, setUpdatedLatex] = useState("");
 
   // 1) Parse & Score JD
   async function handleParseAndScore() {
@@ -137,6 +138,32 @@ export default function HomePage() {
       setCurrentBulletChangeIndex(newIndex);
     } else {
       setCustomizationFlow("completed");
+    }
+  }
+
+  // 5) Inject accepted changes into LaTeX
+  async function handleInjectIntoLatex() {
+    try {
+      if (acceptedExperienceChanges.length === 0) {
+        alert("No accepted changes to inject!");
+        return;
+      }
+      const response = await fetch("/api/customizeResume", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ acceptedChanges: acceptedExperienceChanges }),
+      });
+      const data = await response.json();
+      if (data.error) {
+        alert("Failed to inject changes: " + data.error);
+      } else if (data.updatedTex) {
+        setUpdatedLatex(data.updatedTex);
+      } else {
+        alert("No updatedTex returned.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error injecting changes to LaTeX.");
     }
   }
 
@@ -282,12 +309,28 @@ export default function HomePage() {
                   {JSON.stringify(acceptedExperienceChanges, null, 2)}
                 </pre>
                 <p className="text-gray-800 mt-2">
-                  You can now manually integrate these accepted bullet changes into your .tex file.
+                  Integrate these accepted bullet changes or click below to inject them into your LaTeX file:
                 </p>
+                <button
+                  onClick={handleInjectIntoLatex}
+                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                >
+                  Inject Into LaTeX
+                </button>
               </>
             ) : (
               <p className="text-gray-800">No bullet changes were accepted.</p>
             )}
+          </div>
+        )}
+
+        {/* Step F: Display updated LaTeX */}
+        {updatedLatex && (
+          <div className="mt-8 bg-gray-100 p-4 rounded shadow">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Updated .tex content</h2>
+            <pre className="text-xs text-gray-800 bg-white p-4 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
+              {updatedLatex}
+            </pre>
           </div>
         )}
       </div>
