@@ -6,10 +6,9 @@ import openai from "../../../../lib/openaiClient"; // Adjust path if needed
 
 export async function POST(request) {
   try {
-    const { acceptedChanges } = await request.json();
-    // console.log("Accepted changes:", acceptedChanges);
-    const devopsPath = path.join(process.cwd(), "resumes", "devops.tex");
-    const originalTex = fs.readFileSync(devopsPath, "utf8");
+    const { acceptedChanges, filename } = await request.json();
+    const resumePath = path.join(process.cwd(), "resumes", filename);
+    const originalTex = fs.readFileSync(resumePath, "utf8");
 
     const prompt = `
 You are an AI that updates bullet points in a LaTeX resume. Keep the entire file exactly the same, 
@@ -55,26 +54,20 @@ Here are the changes (each object has "originalBullet" and "newBullet"):
 ${JSON.stringify(acceptedChanges, null, 2)}
 `;
 
-// console.log("Prompt:", prompt);
-
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.1,
       max_tokens: 1200,
     });
-    // console.log("Completion:", completion);
 
     let updatedTex = completion.choices[0]?.message?.content || "";
-    console.log("Updated Tex:", updatedTex);
-    // updatedTex = updatedTex.replace(/```[\s\S]*?```/g, "").trim();
     const experienceSectionRegex = /%-----------EXPERIENCE-----------[\s\S]*?\\resumeSubHeadingListEnd/;
-    // Remove any ```latex blocks from the response
     updatedTex = updatedTex.replace(/```latex|```/g, "").trim();
     const updatedResume = originalTex.replace(experienceSectionRegex, updatedTex);
 
-    // Write to devops_updated.tex
-    const newPath = path.join(process.cwd(), "resumes", "devops_updated.tex");
+    const updatedFileName = path.basename(resumePath, ".tex") + "_updated.tex";
+    const newPath = path.join(path.dirname(resumePath), updatedFileName);
     fs.writeFileSync(newPath, updatedResume, "utf8");
 
     return NextResponse.json({ updatedTex });
