@@ -202,7 +202,16 @@ export default function HomePage() {
           <div className="mt-8 bg-gray-200 p-4 rounded shadow">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Parsed Data</h2>
             <pre className="text-sm text-gray-900 bg-gray-50 p-4 rounded border border-gray-200 overflow-auto whitespace-pre-wrap break-words">
-              {JSON.stringify(parsedData, null, 2)}
+                <div>
+                <h3 className="text-lg font-semibold text-gray-800">Keywords:</h3>
+                <ul className="list-disc list-inside ml-4">
+                  {parsedData.keywords.map((keyword: string, index: number) => (
+                  <li key={index} className="text-sm text-gray-900">{keyword}</li>
+                  ))}
+                </ul>
+                <h3 className="text-lg font-semibold text-gray-800 mt-4">Ideal Candidate Description:</h3>
+                <p className="text-sm text-gray-900">{parsedData.idealCandidateDescription}</p>
+                </div>
             </pre>
           </div>
         )}
@@ -216,9 +225,39 @@ export default function HomePage() {
               {scoreResults.bestResume.scorePercent}% match)
             </p>
             <h3 className="font-semibold text-gray-800">All Scores</h3>
-            <pre className="text-sm text-gray-900 bg-gray-50 p-4 rounded border border-gray-200 overflow-auto whitespace-pre-wrap break-words">
-              {JSON.stringify(scoreResults.allScores, null, 2)}
-            </pre>
+            <div className="space-y-4">
+              {scoreResults.allScores.map((result: any, index: number) => (
+              <div key={index} className="bg-gray-100 p-4 rounded shadow">
+                <h3 className="text-lg font-semibold text-gray-800">File: {result.file}</h3>
+                <p className="text-gray-800">
+                <strong>Match Count:</strong> {result.matchCount} / {result.totalKeywords}
+                </p>
+                <p className="text-gray-800">
+                <strong>Score Percent:</strong> {result.scorePercent}%
+                </p>
+                <div className="mt-2">
+                <h4 className="text-md font-semibold text-gray-800">Matched Keywords:</h4>
+                <ul className="list-disc list-inside ml-4">
+                  {result.matchedKeywords.map((keyword: string, i: number) => (
+                  <li key={i} className="text-sm text-gray-800">{keyword}</li>
+                  ))}
+                </ul>
+                </div>
+                <div className="mt-2">
+                <h4 className="text-md font-semibold text-gray-800">Unmatched Keywords:</h4>
+                <ul className="list-disc list-inside ml-4">
+                  {result.unmatchedKeywords.map((keyword: string, i: number) => (
+                  <li key={i} className="text-sm text-gray-800">{keyword}</li>
+                  ))}
+                </ul>
+                </div>
+                <div className="mt-2">
+                <h4 className="text-md font-semibold text-gray-800">Recommendation:</h4>
+                <p className="text-sm text-gray-800">{result.recommendation}</p>
+                </div>
+              </div>
+              ))}
+            </div>
             <button
               onClick={handleLoadExperiences}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
@@ -310,7 +349,16 @@ export default function HomePage() {
             {acceptedExperienceChanges.length > 0 ? (
               <>
                 <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
-                  {JSON.stringify(acceptedExperienceChanges, null, 2)}
+                  <div className="mt-4"></div>
+                  <h3 className="text-lg font-semibold text-gray-800">Accepted Bullet Changes:</h3>
+                  <ul className="list-disc list-inside ml-4">
+                  {acceptedExperienceChanges.map((change, index) => (
+                    <li key={index} className="text-sm text-gray-900 mb-2">
+                    <p><strong>Original Bullet:</strong> {change.originalBullet}</p>
+                    <p><strong>New Bullet:</strong> {change.newBullet}</p>
+                    </li>
+                  ))}
+                  </ul>
                 </pre>
                 <p className="text-gray-800 mt-2">
                   Integrate these accepted bullet changes or click below to inject them into your LaTeX file:
