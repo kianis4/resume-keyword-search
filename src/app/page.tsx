@@ -2,6 +2,58 @@
 
 import { useState } from "react";
 
+/**
+ * HomePage component for the Resume Tailoring System.
+ * 
+ * This component provides a multi-step process for users to tailor their resumes based on a job description.
+ * 
+ * Steps:
+ * 1. **Upload LaTeX Resume**: Ensure the user uploads a LaTeX copy of their resume before proceeding.
+ * 2. **Paste Job Description**: Users paste the job description into a textarea.
+ * 3. **Parse & Score JD**: The job description is parsed to extract keywords and score resumes based on keyword matches.
+ * 4. **Load Full Experiences**: Extracts full experiences from the best-matching resume.
+ * 5. **Optimize Experience**: Optimizes an entire experience by suggesting bullet point changes based on unmatched keywords.
+ * 6. **Bullet-level Customization**: Users can accept or skip suggested bullet point changes for the selected experience.
+ * 7. **Inject Changes into LaTeX**: Accepted changes are injected into the LaTeX resume file.
+ * 8. **Generate PDF**: The updated LaTeX file is compiled into a PDF, which can be viewed and downloaded.
+ * 
+ * State Variables:
+ * - `jobDesc`: Holds the job description input by the user.
+ * - `parsedData`: Stores the parsed data from the job description.
+ * - `scoreResults`: Stores the scoring results of the resumes.
+ * - `loading`: Indicates if the parsing and scoring process is in progress.
+ * - `extractedExperiences`: Stores the extracted experiences from the best-matching resume.
+ * - `loadingExperiences`: Indicates if the experience extraction process is in progress.
+ * - `experienceBulletChanges`: Stores the suggested bullet point changes for the current experience.
+ * - `currentExperienceIndex`: Index of the current experience being optimized.
+ * - `currentBulletChangeIndex`: Index of the current bullet point change being reviewed.
+ * - `acceptedExperienceChanges`: Stores the accepted bullet point changes.
+ * - `customizationFlow`: Indicates the current state of the customization flow.
+ * - `updatedLatex`: Holds the updated LaTeX content after injecting changes.
+ * - `chosenFilename`: Holds the filename of the chosen resume.
+ * - `pdfUrl`: URL of the generated PDF for viewing and downloading.
+ * 
+ * Functions:
+ * - `handleParseAndScore`: Parses the job description and scores resumes.
+ * - `handleLoadExperiences`: Loads full experiences from the best-matching resume.
+ * - `handleOptimizeExperience`: Optimizes an experience by suggesting bullet point changes.
+ * - `handleAcceptBulletChange`: Accepts the current bullet point change.
+ * - `handleSkipBulletChange`: Skips the current bullet point change.
+ * - `moveToNextBulletChange`: Moves to the next bullet point change.
+ * - `handleInjectIntoLatex`: Injects accepted changes into the LaTeX resume file.
+ * 
+ * UI Components:
+ * - Textarea for job description input.
+ * - Button to parse and score resumes.
+ * - Display of parsed job description data.
+ * - Display of resume scoring results.
+ * - Button to load experiences.
+ * - Display of extracted experiences with an option to optimize each experience.
+ * - Bullet-level customization flow for the selected experience.
+ * - Summary of accepted bullet changes.
+ * - Display of updated LaTeX content.
+ * - Display of generated PDF with an option to download.
+ */
 export default function HomePage() {
   const [jobDesc, setJobDesc] = useState("");
   const [parsedData, setParsedData] = useState<any>(null);
@@ -47,7 +99,15 @@ export default function HomePage() {
           body: JSON.stringify({ keywords: parsed.keywords }),
         });
         const scored = await scoreResponse.json();
-        setScoreResults(scored);
+
+        // Only set scoreResults if there's an actual file
+        if (!scored?.bestResume?.file) {
+          alert("No resumes found. Please upload a resume before customizing.");
+          setScoreResults(null);  // force reset
+          return;
+        } else {
+          setScoreResults(scored);
+        }
       }
     } catch (err) {
       console.error("Error parsing or scoring JD:", err);
@@ -201,6 +261,20 @@ export default function HomePage() {
         <h1 className="text-3xl font-bold mb-6 text-white">
           Resume Tailoring System - Extract Full Experiences
         </h1>
+        <div className="bg-yellow-100 p-4 rounded shadow mb-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Instructions</h2>
+          <ol className="list-decimal list-inside ml-4 text-gray-800">
+            <li className="mb-2">Upload a LaTeX copy of your resume before proceeding.</li>
+            <li className="mb-2">Paste the job description into the provided textarea.</li>
+            <li className="mb-2">Click the "Parse & Score Resumes" button to analyze the job description and score your resumes.</li>
+            <li className="mb-2">Review the parsed job description data and resume scoring results.</li>
+            <li className="mb-2">Click "Load Experiences" to extract full experiences from the best-matching resume.</li>
+            <li className="mb-2">Optimize each experience by clicking the "Optimize This Experience" button.</li>
+            <li className="mb-2">Accept or skip suggested bullet point changes for the selected experience.</li>
+            <li className="mb-2">Inject accepted changes into the LaTeX resume file by clicking "Inject Into LaTeX".</li>
+            <li className="mb-2">View and download the generated PDF of your updated resume.</li>
+          </ol>
+        </div>
 
         {/* Step A: Paste JD + Parse/Score */}
         <label className="block text-white font-semibold mb-2">
@@ -284,8 +358,8 @@ export default function HomePage() {
             </div>
             <button
               onClick={handleLoadExperiences}
+              disabled={!scoreResults || !scoreResults.bestResume}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-              disabled={loadingExperiences}
             >
               {loadingExperiences ? "Loading Experiences..." : "Load Experiences"}
             </button>
