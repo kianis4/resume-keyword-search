@@ -40,17 +40,21 @@ export async function POST(request) {
     if (!filename.endsWith('.tex')) {
       filename = `${filename}.tex`;
     }
-    
-    // Define the path to save the file
+
+    // Check for duplicates
     const resumesDir = path.join(process.cwd(), 'resumes');
-    
-    // Create the directory if it doesn't exist
-    if (!fs.existsSync(resumesDir)) {
-      fs.mkdirSync(resumesDir, { recursive: true });
+    const baseName = path.basename(filename, '.tex');
+    let finalName = filename;
+    let counter = 1;
+
+    while (fs.existsSync(path.join(resumesDir, finalName))) {
+      finalName = `${baseName}-${counter}.tex`;
+      counter++;
     }
-    
+
+    filename = finalName;
     const filePath = path.join(resumesDir, filename);
-    
+
     // Write the file
     await writeFile(filePath, content);
     
