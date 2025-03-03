@@ -67,8 +67,38 @@ export default function GalleryPage() {
     }
   }
 
+  async function handleDeleteResume(filename: string, event: React.MouseEvent) {
+    event.stopPropagation(); // Prevent the event from bubbling up
+    
+    if (window.confirm(`Are you sure you want to delete ${filename}?`)) {
+      try {
+        setError(null);
+        const response = await fetch(`/api/deleteResume?filename=${filename}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to delete resume: ${response.status} ${response.statusText}`);
+        }
+
+        // Refresh the resume list
+        const updatedResumes = resumes.filter(resume => resume.name !== filename);
+        setResumes(updatedResumes);
+        
+        // If the deleted resume was selected, clear the viewer
+        if (selectedPdf && filename === compiling) {
+          setSelectedPdf(null);
+        }
+      } catch (error) {
+        console.error('Error deleting resume:', error);
+        setError(error instanceof Error ? error.message : 'Unknown error deleting resume');
+      }
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-gray-900">      
+    <main className="min-h-screen bg-gray-900">
+      
       <div className="max-w-6xl mx-auto p-8">
         <h1 className="text-3xl font-bold mb-6 text-white">Resume Gallery</h1>
         
@@ -92,13 +122,22 @@ export default function GalleryPage() {
                   <li key={resume.name} className="p-2 border-b border-gray-200">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700">{resume.name}</span>
-                      <button
-                        onClick={() => handleViewPdf(resume.name)}
-                        disabled={compiling === resume.name}
-                        className={`px-3 py-1 text-sm ${compiling === resume.name ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded`}
-                      >
-                        {compiling === resume.name ? 'Generating...' : 'View PDF'}
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={(e) => handleDeleteResume(resume.name, e)}
+                          className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
+                          title="Delete resume"
+                        >
+                          Delete
+                        </button>
+                        <button
+                          onClick={() => handleViewPdf(resume.name)}
+                          disabled={compiling === resume.name}
+                          className={`px-3 py-1 text-sm ${compiling === resume.name ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded`}
+                        >
+                          {compiling === resume.name ? 'Generating...' : 'View PDF'}
+                        </button>
+                      </div>
                     </div>
                   </li>
                 ))}
