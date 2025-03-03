@@ -1,0 +1,208 @@
+%-------------------------
+% Resume in Latex
+% Author : Suleyman Kiani
+% Based off of: https://github.com/sb2nov/resume
+% License : MIT
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+
+
+%----------FONT OPTIONS----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+% \usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+
+\pagestyle{fancy}
+\fancyhf{} % clear all header and footer fields
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure that generate pdf is machine readable/ATS parsable
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+%----------HEADING----------
+% \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
+%   \textbf{\href{http://sourabhbajaj.com/}{\Large Sourabh Bajaj}} & Email : \href{mailto:sourabh@sourabhbajaj.com}{sourabh@sourabhbajaj.com}\\
+%   \href{http://sourabhbajaj.com/}{http://www.sourabhbajaj.com} & Mobile : +1-123-456-7890 \\
+% \end{tabular*}
+
+\begin{center}
+    \textbf{\Huge \scshape Suleyman Kiani} \\ \vspace{1pt}
+    \small +1 289-788-8260 $|$ \href{mailto:suley.kiani@outlook.com}{\underline{suley.kiani@outlook.com}} $|$
+    \href{mailto:kianis4@mcmaster.ca}{\underline{kianis4@mcmaster.ca}} $|$ 
+    \href{https://linkedin.com/in/suleyman-kiani}{\underline{linkedin.com/in/suleyman-kiani}} $|$
+    \href{https://github.com/kianis4}{\underline{github.com/kianis4}}
+\end{center}
+
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {McMaster University}{Hamilton, ON}
+      {Bachelor of Applied Science in Computer Science CO-OP}{Sep. 2018 -- Nov 2024}
+  \resumeSubHeadingListEnd
+
+
+%-----------EXPERIENCE-----------
+\section{Experience}
+  \resumeSubHeadingListStart
+
+    \resumeSubheading
+      {Software \& IT Systems Dev}{Aug. 2024 -- Present}
+      {Burlington Training Centre}{Burlington, ON}
+      \resumeItemListStart
+        \resumeItem{Built scalable mobile and web applications utilizing \textbf{React Native}, \textbf{Swift}, \textbf{Kotlin}, \textbf{Java}, \textbf{Typescript}, and \textbf{Ruby on Rails} to enhance deployment processes with \textbf{Kubernetes}, achieving a \textbf{40\%} decrease in release cycle times and enhanced system availability.}
+        \resumeItem{Optimized end-to-end \textbf{CI/CD} workflows for mobile and web applications with \textbf{GitHub Actions}, \textbf{Jenkins}, and \textbf{Swift}, integrating automated testing, code quality checks, and seamless rollouts across diverse environments.}
+        \resumeItem{Utilized \textbf{Terraform} to provision and manage AWS resources for mobile and web applications, enhancing provisioning processes for \textbf{Swift}, \textbf{Kotlin}, \textbf{Java}, \textbf{Typescript}, and \textbf{Ruby on Rails} components to boost scalability and ensure consistency.}
+        \resumeItem{Implemented monitoring solutions for mobile and web applications with \textbf{Prometheus}, \textbf{Grafana}, and custom dashboards, enabling proactive performance monitoring, rapid incident response, and a \textbf{50\%} reduction in system downtime.}
+      \resumeItemListEnd
+
+    \resumeSubheading
+      {Junior Web Developer }{May 2021 -- Aug 2022}
+      {Giftcash Inc.}{Remote}
+      \resumeItemListStart
+        \resumeItem{Led the migration of a legacy \textbf{Python}/\textbf{Django} monolith to a \textbf{Node.js} serverless microservices architecture, achieving a \textbf{15\%} increase in scalability, showcasing adaptability to new technologies like Node.js and microservices, aligning with experience in SaaS development.}
+        \resumeItem{Showcased expertise in database optimization by optimizing \textbf{PostgreSQL} performance through indexing, caching, and query optimization, reducing response times by \textbf{20\%} and enhancing data retrieval efficiency under high loads, aligning with experience in database optimization for large-scale systems and SaaS products.}
+        \resumeItem{Automated gift card balance verifications across multiple platforms by developing efficient data extraction workflows using \textbf{Puppeteer} and \textbf{Axios} in an Agile environment, increasing operational efficiency by \textbf{25\%} and demonstrating proficiency in Agile processes, aligning with experience in SaaS development.}
+        \resumeItem{Implemented efficient \textbf{CI/CD} pipelines with \textbf{Jenkins} and \textbf{GitHub Actions} to enable rapid, automated development cycles and seamless deployments across environments, aligning with experience in working with distributed teams, SaaS products, and large-scale systems.}
+    \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+
+%-----------PROJECTS-----------
+\section{Projects}
+    \resumeSubHeadingListStart
+
+      \resumeProjectHeading
+          {\textbf{E\&S Solutions} $|$ \emph{Next.js, React, AWS, Docker, GitHub Actions}}{May 2023 -- Present}
+          \resumeItemListStart
+            \resumeItem{Co-founded a software services venture delivering cloud-native, full-stack solutions for small businesses.}
+            \resumeItem{Developed multiple scalable \textbf{TypeScript}-based applications using \textbf{Next.js} and \textbf{React}, deploying them on \textbf{AWS} (\textbf{EC2}, \textbf{S3}, \textbf{CloudFront}) and \textbf{Vercel} to achieve sub-second page loads, minimal latency, and availability.}
+            \resumeItem{Automated complex data workflows using \textbf{Bash}, \textbf{Python}, and \textbf{Docker}, significantly reducing manual aggregation efforts by \textbf{80\%}, enhancing error handling and logging, and accelerating data-driven decision-making.}
+          \resumeItemListEnd
+
+      \resumeProjectHeading
+          {\href{https://www.skompxcel.com/}{\textbf{SKompXcel Academic Solutions}} $|$ \emph{Google Cloud, React, Python}}{Jan 2024 -- Present}
+          \resumeItemListStart
+            \resumeItem{Founded a tutoring and mentorship platform for Computer Science and Software Engineering \textbf{20+} students.}
+            \resumeItem{Architected the platform on \textbf{Google Cloud} (Compute Engine, Cloud Storage) for scalable hosting.}
+          \resumeItemListEnd
+          
+      \resumeProjectHeading
+            {\href{https://www.suleyman.io}{\textbf{Suley Fitness Portfolio}} $|$ \emph{Next.js, Tailwind CSS, React, Spotify API, Instagram API}}{2023 -- Present}
+          \resumeItemListStart
+            \resumeItem{Developed a personal portfolio consolidating a blog, Spotify viewer, and Instagram viewer using \textbf{Next.js} and \textbf{Tailwind CSS}, showcasing my journey as a Developer, Personal Trainer, Tutor, and Martial Arts Instructor.}
+            \resumeItem{Integrated external APIs with secure \textbf{OAuth 2.0} to fetch real-time data; view the blog at \href{https://www.suleyman.io/articles}{\textbf{suleyman.io/articles}}, the Spotify viewer at \href{https://www.suleyman.io/spotify}{\textbf{\textbf{suleyman.io/spotify}}}, and the Instagram viewer at \href{https://www.suleyman.io/insta}{\textbf{suleyman.io/insta}}.}
+          \resumeItemListEnd
+    \resumeProjectHeading
+        {\href{https://github.com/kianis4/load-balancer}{\textbf{Load Balancer System}} $|$ \emph{Python, Sockets, Multi-threading, Logging}}{2023}
+        \resumeItemListStart
+          \resumeItem{Implemented a multi-threaded load balancer in \textbf{Python} to efficiently distribute incoming client requests across multiple backend servers using both \textbf{Round-Robin} and \textbf{Least Connections} strategies.}
+          \resumeItem{Engineered robust fault tolerance and real-time health monitoring, automatically detecting server failures and reintegrating recovered servers to maintain high availability.}
+          % \resumeItem{Integrated comprehensive logging and performance tracking to monitor request flow, response times, and server status, ensuring rapid troubleshooting and system optimization.}
+        \resumeItemListEnd
+
+    \resumeSubHeadingListEnd
+
+
+%
+%-----------PROGRAMMING SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Languages \& Scripting}{: Python, JavaScript, TypeScript, Java, Bash, PowerShell} \\
+     \textbf{DevOps Tools}{: Git, Docker, Kubernetes, GitHub Actions, Terraform, Jenkins, Ansible} \\
+     \textbf{Cloud \& Databases}{: AWS (EC2, S3, CloudFront, RDS, Lambda, EKS), GCP, PostgreSQL, MongoDB} \\
+     \textbf{Monitoring \& Automation}{: Prometheus, Grafana, ELK Stack, Nagios, Selenium}
+    }}
+ \end{itemize}
+
+
+%-------------------------------------------
+\end{document}

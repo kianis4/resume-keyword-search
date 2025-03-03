@@ -70,7 +70,10 @@ ${JSON.stringify(acceptedChanges, null, 2)}
     const newPath = path.join(path.dirname(resumePath), updatedFileName);
     fs.writeFileSync(newPath, updatedResume, "utf8");
 
-    return NextResponse.json({ updatedTex });
+    return NextResponse.json({ 
+      updatedTex,
+      updatedFileName
+    });
   } catch (error) {
     console.error("Failed to inject changes:", error);
     return NextResponse.json({ error: "Failed to inject changes." }, { status: 500 });

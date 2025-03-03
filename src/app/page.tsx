@@ -25,6 +25,9 @@ export default function HomePage() {
   // Holds the chosen filename
   const [chosenFilename, setChosenFilename] = useState("devops.tex");
 
+  // Holds the PDF URL
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
   // 1) Parse & Score JD
   async function handleParseAndScore() {
     setLoading(true);
@@ -152,16 +155,37 @@ export default function HomePage() {
         alert("No accepted changes to inject!");
         return;
       }
+      
       const response = await fetch("/api/customizeResume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ acceptedChanges: acceptedExperienceChanges, filename: chosenFilename }),
+        body: JSON.stringify({ 
+          acceptedChanges: acceptedExperienceChanges, 
+          filename: chosenFilename 
+        }),
       });
+      
       const data = await response.json();
+      
       if (data.error) {
         alert("Failed to inject changes: " + data.error);
       } else if (data.updatedTex) {
         setUpdatedLatex(data.updatedTex);
+        
+        // Store the updated filename - fix the property name to match what's returned from the API
+        const updatedFileName = data.updatedFileName;  // Changed from updatedFilename to updatedFileName
+        
+        // Fetch the generated PDF using the updated filename
+        const pdfResponse = await fetch(`/api/compilePDF?filename=${updatedFileName}`);
+        
+        if (pdfResponse.ok) {
+          const pdfBlob = await pdfResponse.blob();
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          setPdfUrl(pdfUrl);
+        } else {
+          console.error('Failed to fetch PDF:', await pdfResponse.text());
+          alert('Failed to generate PDF. Check console for details.');
+        }
       } else {
         alert("No updatedTex returned.");
       }
@@ -202,16 +226,16 @@ export default function HomePage() {
           <div className="mt-8 bg-gray-200 p-4 rounded shadow">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Parsed Data</h2>
             <pre className="text-sm text-gray-900 bg-gray-50 p-4 rounded border border-gray-200 overflow-auto whitespace-pre-wrap break-words">
-                <div>
+              <div>
                 <h3 className="text-lg font-semibold text-gray-800">Keywords:</h3>
                 <ul className="list-disc list-inside ml-4">
                   {parsedData.keywords.map((keyword: string, index: number) => (
-                  <li key={index} className="text-sm text-gray-900">{keyword}</li>
+                    <li key={index} className="text-sm text-gray-900">{keyword}</li>
                   ))}
                 </ul>
                 <h3 className="text-lg font-semibold text-gray-800 mt-4">Ideal Candidate Description:</h3>
                 <p className="text-sm text-gray-900">{parsedData.idealCandidateDescription}</p>
-                </div>
+              </div>
             </pre>
           </div>
         )}
@@ -227,35 +251,35 @@ export default function HomePage() {
             <h3 className="font-semibold text-gray-800">All Scores</h3>
             <div className="space-y-4">
               {scoreResults.allScores.map((result: any, index: number) => (
-              <div key={index} className="bg-gray-100 p-4 rounded shadow">
-                <h3 className="text-lg font-semibold text-gray-800">File: {result.file}</h3>
-                <p className="text-gray-800">
-                <strong>Match Count:</strong> {result.matchCount} / {result.totalKeywords}
-                </p>
-                <p className="text-gray-800">
-                <strong>Score Percent:</strong> {result.scorePercent}%
-                </p>
-                <div className="mt-2">
-                <h4 className="text-md font-semibold text-gray-800">Matched Keywords:</h4>
-                <ul className="list-disc list-inside ml-4">
-                  {result.matchedKeywords.map((keyword: string, i: number) => (
-                  <li key={i} className="text-sm text-gray-800">{keyword}</li>
-                  ))}
-                </ul>
+                <div key={index} className="bg-gray-100 p-4 rounded shadow">
+                  <h3 className="text-lg font-semibold text-gray-800">File: {result.file}</h3>
+                  <p className="text-gray-800">
+                    <strong>Match Count:</strong> {result.matchCount} / {result.totalKeywords}
+                  </p>
+                  <p className="text-gray-800">
+                    <strong>Score Percent:</strong> {result.scorePercent}%
+                  </p>
+                  <div className="mt-2">
+                    <h4 className="text-md font-semibold text-gray-800">Matched Keywords:</h4>
+                    <ul className="list-disc list-inside ml-4">
+                      {result.matchedKeywords.map((keyword: string, i: number) => (
+                        <li key={i} className="text-sm text-gray-800">{keyword}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-2">
+                    <h4 className="text-md font-semibold text-gray-800">Unmatched Keywords:</h4>
+                    <ul className="list-disc list-inside ml-4">
+                      {result.unmatchedKeywords.map((keyword: string, i: number) => (
+                        <li key={i} className="text-sm text-gray-800">{keyword}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="mt-2">
+                    <h4 className="text-md font-semibold text-gray-800">Recommendation:</h4>
+                    <p className="text-sm text-gray-800">{result.recommendation}</p>
+                  </div>
                 </div>
-                <div className="mt-2">
-                <h4 className="text-md font-semibold text-gray-800">Unmatched Keywords:</h4>
-                <ul className="list-disc list-inside ml-4">
-                  {result.unmatchedKeywords.map((keyword: string, i: number) => (
-                  <li key={i} className="text-sm text-gray-800">{keyword}</li>
-                  ))}
-                </ul>
-                </div>
-                <div className="mt-2">
-                <h4 className="text-md font-semibold text-gray-800">Recommendation:</h4>
-                <p className="text-sm text-gray-800">{result.recommendation}</p>
-                </div>
-              </div>
               ))}
             </div>
             <button
@@ -352,12 +376,12 @@ export default function HomePage() {
                   <div className="mt-4"></div>
                   <h3 className="text-lg font-semibold text-gray-800">Accepted Bullet Changes:</h3>
                   <ul className="list-disc list-inside ml-4">
-                  {acceptedExperienceChanges.map((change, index) => (
-                    <li key={index} className="text-sm text-gray-900 mb-2">
-                    <p><strong>Original Bullet:</strong> {change.originalBullet}</p>
-                    <p><strong>New Bullet:</strong> {change.newBullet}</p>
-                    </li>
-                  ))}
+                    {acceptedExperienceChanges.map((change, index) => (
+                      <li key={index} className="text-sm text-gray-900 mb-2">
+                        <p><strong>Original Bullet:</strong> {change.originalBullet}</p>
+                        <p><strong>New Bullet:</strong> {change.newBullet}</p>
+                      </li>
+                    ))}
                   </ul>
                 </pre>
                 <p className="text-gray-800 mt-2">
@@ -383,6 +407,29 @@ export default function HomePage() {
             <pre className="text-xs text-gray-800 bg-white p-4 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
               {updatedLatex}
             </pre>
+          </div>
+        )}
+
+        {/* Step G: Display generated PDF */}
+        {pdfUrl && (
+          <div className="mt-8 bg-gray-100 p-4 rounded shadow">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Generated PDF</h2>
+            <iframe
+              src={pdfUrl}
+              width="100%"
+              height="600px"
+              className="border border-gray-300 rounded"
+              title="Resume PDF"
+            ></iframe>
+            <div className="mt-4">
+              <a 
+                href={pdfUrl} 
+                download={`resume_${Date.now()}.pdf`}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Download PDF
+              </a>
+            </div>
           </div>
         )}
       </div>
