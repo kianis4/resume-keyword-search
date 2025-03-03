@@ -11,7 +11,7 @@ export async function GET(request) {
     
     // Define the path to the input .tex file
     const inputPath = path.join(process.cwd(), 'resumes', filename);
-    const outputPath = path.join(process.cwd(), 'resumes', filename.replace('.tex', '.pdf'));
+    const outputPath = path.join(process.cwd(), 'pdfResumes', filename.replace('.tex', '.pdf'));
     
     console.log('inputPath:', inputPath);
     console.log('outputPath:', outputPath);
@@ -19,6 +19,12 @@ export async function GET(request) {
     // Check if the input file exists
     if (!fs.existsSync(inputPath)) {
       return NextResponse.json({ error: 'Input file not found' }, { status: 404 });
+    }
+
+    // Create pdfResumes directory if it doesn't exist
+    const pdfResumesDir = path.join(process.cwd(), 'pdfResumes');
+    if (!fs.existsSync(pdfResumesDir)) {
+      fs.mkdirSync(pdfResumesDir, { recursive: true });
     }
 
     // Compile the LaTeX document to PDF
