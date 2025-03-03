@@ -108,7 +108,7 @@ export default function UploadPage() {
                   type="file"
                   accept=".tex"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="w-full p-2 border border-gray-300 rounded"
+                  className="w-full p-2 border border-gray-300 rounded text-gray-900"
                 />
               </div>
             ) : (
@@ -120,7 +120,7 @@ export default function UploadPage() {
                   value={latexContent}
                   onChange={(e) => setLatexContent(e.target.value)}
                   rows={15}
-                  className="w-full p-2 border border-gray-300 rounded font-mono text-sm"
+                  className="w-full p-2 border border-gray-300 rounded font-mono text-sm text-gray-900"
                   placeholder="\documentclass{article}..."
                 />
               </div>
@@ -136,7 +136,7 @@ export default function UploadPage() {
               value={filename}
               onChange={(e) => setFilename(e.target.value)}
               placeholder="e.g., my_resume"
-              className="w-full p-2 border border-gray-300 rounded"
+              className="w-full p-2 border border-gray-300 rounded bg-white text-gray-900 focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 focus:outline-none"
             />
           </div>
           
