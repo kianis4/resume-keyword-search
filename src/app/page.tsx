@@ -94,6 +94,16 @@ export default function HomePage() {
   const [extractedCompany, setExtractedCompany] = useState("");
   const [extractedPosition, setExtractedPosition] = useState("");
 
+  // Add these new state variables for skills section
+  const [currentSkills, setCurrentSkills] = useState<any>(null);
+  const [optimizedSkills, setOptimizedSkills] = useState<any>(null);
+  const [loadingSkills, setLoadingSkills] = useState(false);
+  const [skillsOptimized, setSkillsOptimized] = useState(false);
+  const [acceptedSkills, setAcceptedSkills] = useState<any>(null);
+
+  // Add this new state variable
+  const [skillsAccepted, setSkillsAccepted] = useState(false);
+
   // 1) Parse & Score JD
   async function handleParseAndScore() {
     setLoading(true);
@@ -298,8 +308,8 @@ export default function HomePage() {
         set?.acceptedChanges || []
       );
       
-      if (allAcceptedChanges.length === 0) {
-        alert("No accepted changes to inject!");
+      if (allAcceptedChanges.length === 0 && !acceptedSkills) {
+        alert("No changes to inject! Please accept experience or skills changes.");
         return;
       }
       
@@ -313,6 +323,7 @@ export default function HomePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           acceptedChanges: allAcceptedChanges, 
+          acceptedSkills: acceptedSkills, // Add this new parameter
           filename: chosenFilename,
           newFileName: newFileName.endsWith('.tex') ? newFileName : `${newFileName}.tex`
         }),
@@ -344,6 +355,72 @@ export default function HomePage() {
       console.error(err);
       alert("Error injecting changes to LaTeX.");
     }
+  }
+
+  // Function to load skills
+  async function handleLoadSkills() {
+    if (!scoreResults?.bestResume?.file) {
+      alert("No best resume file found. Please parse & score first.");
+      return;
+    }
+    setLoadingSkills(true);
+    try {
+      const file = scoreResults.bestResume.file;
+      const response = await fetch(`/api/extractSkills?file=${file}`);
+      const data = await response.json();
+      if (data.skills) {
+        setCurrentSkills(data.skills);
+      } else {
+        alert(data.error || "Failed to extract skills.");
+      }
+    } catch (err) {
+      console.error("Error extracting skills:", err);
+      alert("Failed to extract skills from resume.");
+    } finally {
+      setLoadingSkills(false);
+    }
+  }
+
+  // Function to optimize skills
+  async function handleOptimizeSkills() {
+    if (!currentSkills || !scoreResults?.bestResume) {
+      alert("Current skills or best resume not found. Please load skills first.");
+      return;
+    }
+    setLoadingSkills(true);
+    try {
+      const unmatched = scoreResults.bestResume.unmatchedKeywords || [];
+      
+      const response = await fetch("/api/optimizeSkills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentSkills,
+          jobDescription: jobDesc,
+          unmatchedKeywords: unmatched
+        }),
+      });
+      
+      const data = await response.json();
+      if (data.optimizedSkills) {
+        setOptimizedSkills(data.optimizedSkills);
+        setSkillsOptimized(true);
+      } else {
+        alert(data.error || "Failed to optimize skills.");
+      }
+    } catch (err) {
+      console.error("Error optimizing skills:", err);
+      alert("Failed to optimize skills.");
+    } finally {
+      setLoadingSkills(false);
+    }
+  }
+
+  // Function to accept optimized skills
+  function handleAcceptSkills() {
+    if (!optimizedSkills) return;
+    setAcceptedSkills(optimizedSkills);
+    setSkillsAccepted(true); // Add this line
   }
 
   useEffect(() => {
@@ -543,6 +620,71 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Skills Optimization Section */}
+        {scoreResults && !currentSkills && experienceChangeSets.some(set => set?.status === "completed") && (
+          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Skills Optimization</h2>
+            <p className="text-gray-800 mb-4">
+              Now that you've optimized the experience section, let's optimize your skills section based on the job description.
+            </p>
+            <button
+              onClick={handleLoadSkills}
+              disabled={loadingSkills}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              {loadingSkills ? "Loading Skills..." : "Load Skills Section"}
+            </button>
+          </div>
+        )}
+
+        {/* Display Current Skills */}
+        {currentSkills && !skillsOptimized && (
+          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Current Skills</h2>
+            
+            {currentSkills.categories.map((category: any, index: number) => (
+              <div key={index} className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">{category.name}:</h3>
+                <p className="text-gray-800">{category.skills.join(", ")}</p>
+              </div>
+            ))}
+            
+            <button
+              onClick={handleOptimizeSkills}
+              disabled={loadingSkills}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              {loadingSkills ? "Optimizing Skills..." : "Optimize Skills For Job"}
+            </button>
+          </div>
+        )}
+
+        {/* Display Optimized Skills */}
+        {optimizedSkills && (
+          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Optimized Skills</h2>
+            
+            {optimizedSkills.categories.map((category: any, index: number) => (
+              <div key={index} className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">{category.name}:</h3>
+                <p className="text-gray-800">{category.skills.join(", ")}</p>
+              </div>
+            ))}
+            
+            <button
+              onClick={handleAcceptSkills}
+              disabled={skillsAccepted}
+              className={`mt-4 px-4 py-2 ${
+                skillsAccepted 
+                  ? "bg-gray-500" 
+                  : "bg-green-600 hover:bg-green-700"
+              } text-white rounded`}
+            >
+              {skillsAccepted ? "Changes Accepted" : "Accept Optimized Skills"}
+            </button>
+          </div>
+        )}
+
         {/* Add a summary section that shows all accepted changes and inject button */}
         {experienceChangeSets.some(set => set?.acceptedChanges?.length > 0) && customizationFlow !== "inProgress" && (
           <div className="mt-8 bg-gray-200 p-4 rounded shadow">
@@ -565,6 +707,20 @@ export default function HomePage() {
                 </div>
               )
             ))}
+
+            {/* Add this new section for accepted skills */}
+            {acceptedSkills && (
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-800">Skills Updates</h3>
+                <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
+                  {acceptedSkills.categories.map((category: any, index: number) => (
+                    <div key={index} className="mb-2">
+                      <strong>{category.name}:</strong> {category.skills.join(", ")}
+                    </div>
+                  ))}
+                </pre>
+              </div>
+            )}
             
             <div className="mt-4 flex flex-col md:flex-row gap-2">
               <div className="flex-grow">
@@ -585,12 +741,25 @@ export default function HomePage() {
               <div className="flex items-end">
                 <button
                   onClick={handleInjectIntoLatex}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 h-10 whitespace-nowrap"
+                  disabled={!acceptedSkills && experienceChangeSets.some(set => set?.status === "completed")}
+                  className={`px-4 py-2 ${
+                    !acceptedSkills && experienceChangeSets.some(set => set?.status === "completed")
+                    ? "bg-gray-400 cursor-not-allowed" 
+                    : "bg-indigo-600 hover:bg-indigo-700"
+                  } text-white rounded h-10 whitespace-nowrap`}
                 >
-                  Inject All Changes Into LaTeX
+                  {!acceptedSkills && experienceChangeSets.some(set => set?.status === "completed")
+                    ? "Optimize Skills First" 
+                    : "Inject All Changes Into LaTeX"
+                  }
                 </button>
               </div>
             </div>
+            {!acceptedSkills && experienceChangeSets.some(set => set?.status === "completed") && (
+              <p className="text-xs text-orange-600 mt-1">
+                Please optimize and accept skills changes before injecting into LaTeX
+              </p>
+            )}
           </div>
         )}
 
