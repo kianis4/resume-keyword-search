@@ -1,6 +1,17 @@
 "use client";
 
+// TODO: Implement skills section updating
+// This will allow users to customize the skills section of their resume based on the job description
+// Features to implement:
+// - Extract skills from job description
+// - Compare with current skills in resume
+// - Suggest skills to add/prioritize
+// - Allow manual skills editing
+// - Update skills section in LaTeX resume
+
+
 import { useState, useEffect } from "react";
+// import SkillsEditor from "@/components/SkillsEditor";
 
 /**
  * HomePage component for the Resume Tailoring System.
