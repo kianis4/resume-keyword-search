@@ -143,15 +143,23 @@ export default function GalleryPage() {
             ) : resumes.length === 0 ? (
               <p className="text-gray-600">No resumes found.</p>
             ) : (
+              // Update the list items to show full filenames and maintain proper layout
               <ul className="space-y-2">
                 {resumes.map(resume => (
                   <li key={resume.name} className="p-2 border-b border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-700">{resume.name}</span>
-                      <div className="flex space-x-2">
+                    <div className="flex flex-col gap-2">
+                      {/* Show full filename without truncation */}
+                      <div className="break-words w-full">
+                        <span className="text-gray-700 font-medium" title={resume.name}>
+                          {resume.name}
+                        </span>
+                      </div>
+                      
+                      {/* Action buttons in their own row */}
+                      <div className="flex flex-wrap gap-2 justify-end">
                         <button
                           onClick={(e) => handleDeleteResume(resume.name, e)}
-                          className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
+                          className="px-2 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded"
                           title="Delete resume"
                         >
                           Delete
@@ -159,14 +167,14 @@ export default function GalleryPage() {
                         <button
                           onClick={() => handleViewLatex(resume.name)}
                           disabled={loadingLatex === resume.name}
-                          className={`px-3 py-1 text-sm ${loadingLatex === resume.name ? 'bg-gray-400' : 'bg-yellow-600 hover:bg-yellow-700'} text-white rounded`}
+                          className={`px-2 py-1 text-xs ${loadingLatex === resume.name ? 'bg-gray-400' : 'bg-yellow-600 hover:bg-yellow-700'} text-white rounded`}
                         >
                           {loadingLatex === resume.name ? 'Loading...' : 'View LaTeX'}
                         </button>
                         <button
                           onClick={() => handleViewPdf(resume.name)}
                           disabled={compiling === resume.name}
-                          className={`px-3 py-1 text-sm ${compiling === resume.name ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded`}
+                          className={`px-2 py-1 text-xs ${compiling === resume.name ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded`}
                         >
                           {compiling === resume.name ? 'Generating...' : 'View PDF'}
                         </button>
