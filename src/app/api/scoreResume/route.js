@@ -4,6 +4,19 @@ import fs from "fs";
 import path from "path";
 import openai from "../../../../lib/openaiClient"; // Adjust path alias or use relative import if needed
 
+// Add this function to normalize LaTeX special characters for comparison
+function normalizeLatexForComparison(content) {
+  // Replace LaTeX escape sequences with their plain text equivalents
+  return content
+    .replace(/C\\#/g, 'C#')
+    .replace(/F\\#/g, 'F#')
+    .replace(/\\#/g, '#')
+    .replace(/\\%/g, '%')
+    .replace(/\\&/g, '&')
+    .replace(/\\_/g, '_')
+    .replace(/\\\$/g, '$');
+}
+
 export async function POST(request) {
   try {
     const { keywords } = await request.json();
@@ -23,14 +36,17 @@ export async function POST(request) {
 
     for (const file of resumeFiles) {
       const fullPath = path.join(resumesDir, file);
-      const content = fs.readFileSync(fullPath, "utf8").toLowerCase();
+      const content = fs.readFileSync(fullPath, "utf8");
+      
+      // Normalize the content for keyword comparison
+      const normalizedContent = normalizeLatexForComparison(content.toLowerCase());
 
       // Determine matched vs unmatched
       const matchedKeywords = [];
       const unmatchedKeywords = [];
 
       for (const kw of keywords) {
-        if (content.includes(kw.toLowerCase())) {
+        if (normalizedContent.includes(kw.toLowerCase())) {
           matchedKeywords.push(kw);
         } else {
           unmatchedKeywords.push(kw);

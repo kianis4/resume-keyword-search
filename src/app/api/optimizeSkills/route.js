@@ -2,6 +2,36 @@
 import { NextResponse } from 'next/server';
 import openai from '../../../../lib/openaiClient';
 
+// Add this function to sanitize LaTeX special characters
+function sanitizeLatexContent(text) {
+  // Handle specific programming language cases first
+  text = text.replace(/C#/g, 'C\\#')
+             .replace(/F#/g, 'F\\#')
+             .replace(/A#/g, 'A\\#')
+             .replace(/J#/g, 'J\\#')
+             .replace(/\.NET/g, '.NET');
+  
+  // Handle special LaTeX characters in regular text
+  // Only apply to parts outside of LaTeX control sequences
+  const latexCommandPattern = /\\[a-zA-Z]+(\{[^}]*\})?/g;
+  const parts = text.split(latexCommandPattern);
+  
+  for (let i = 0; i < parts.length; i++) {
+    // Skip even indices which are LaTeX commands
+    if (i % 2 === 1) continue;
+    
+    // Escape special characters in regular text parts
+    parts[i] = parts[i]
+      .replace(/#/g, '\\#')
+      .replace(/%/g, '\\%')
+      .replace(/&/g, '\\&')
+      .replace(/_/g, '\\_')
+      .replace(/\$/g, '\\$');
+  }
+  
+  return text;
+}
+
 export async function POST(request) {
   try {
     const { currentSkills, jobDescription, unmatchedKeywords } = await request.json();
@@ -31,6 +61,7 @@ export async function POST(request) {
       1. Do NOT include markdown code blocks or backticks in your response - just return valid JSON.
       2. For the rawLatex field, include the FULL skills section exactly as it should appear in the LaTeX document,
          including the section header "%-----------PROGRAMMING SKILLS-----------" and all LaTeX formatting.
+      3. Make sure to escape special LaTeX characters: C# should be written as C\\#, & as \\&, % as \\%, etc.
       
       Follow this exact format for the rawLatex output:
       %-----------PROGRAMMING SKILLS-----------
@@ -78,11 +109,18 @@ export async function POST(request) {
       .replace(/```/g, '')
       .trim();
     
-    // console.log('Cleaned content:', cleanedContent.substring(0, 200) + '...');
+    console.log('Cleaned content:', cleanedContent.substring(0, 200) + '...');
     
     let optimizedSkills = {};
     try {
       optimizedSkills = JSON.parse(cleanedContent);
+      
+      // Sanitize the LaTeX content before sending it back
+      if (optimizedSkills.rawLatex) {
+        optimizedSkills.rawLatex = sanitizeLatexContent(optimizedSkills.rawLatex);
+        console.log('Sanitized LaTeX:', optimizedSkills.rawLatex.substring(0, 200) + '...');
+      }
+      
     } catch (err) {
       console.error('Failed to parse optimized skills JSON:', err);
       console.error('Content that failed to parse:', cleanedContent);
