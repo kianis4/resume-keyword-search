@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navigation from '../components/Navigation';
+import Footer from '../components/Footer';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,11 +29,7 @@ export default function RootLayout({
       <body className="bg-gray-900">
         <Navigation />
         {children}
-        {/* Add a footer at the end of the page */}
-        <footer className="mt-16 text-center text-gray-500 text-sm">
-          <p>© 2024 SKomp<span className="text-blue-500">X</span>cel Calibrate</p>
-          <p className="mt-1">A product by SKompXcel Academic Solutions</p>
-        </footer>
+        <Footer />
       </body>
     </html>
   );
