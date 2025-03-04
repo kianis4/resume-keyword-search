@@ -104,6 +104,11 @@ export default function HomePage() {
   // Add this new state variable
   const [skillsAccepted, setSkillsAccepted] = useState(false);
 
+  // Add these new state variables at the top with other state variables
+  const [originalScore, setOriginalScore] = useState<any>(null);
+  const [newScore, setNewScore] = useState<any>(null);
+  const [improvementPercent, setImprovementPercent] = useState<number | null>(null);
+
   // 1) Parse & Score JD
   async function handleParseAndScore() {
     setLoading(true);
@@ -318,6 +323,17 @@ export default function HomePage() {
         return;
       }
       
+      // Store the original score before making changes
+      if (scoreResults?.bestResume) {
+        setOriginalScore({
+          matchCount: scoreResults.bestResume.matchCount,
+          totalKeywords: scoreResults.bestResume.totalKeywords,
+          scorePercent: scoreResults.bestResume.scorePercent,
+          matchedKeywords: scoreResults.bestResume.matchedKeywords,
+          unmatchedKeywords: scoreResults.bestResume.unmatchedKeywords
+        });
+      }
+      
       const response = await fetch("/api/customizeResume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -344,6 +360,35 @@ export default function HomePage() {
           const pdfBlob = await pdfResponse.blob();
           const pdfUrl = URL.createObjectURL(pdfBlob);
           setPdfUrl(pdfUrl);
+          
+          // Score the new resume with the existing scoreResume endpoint
+          if (parsedData?.keywords) {
+            try {
+              // Call the same endpoint we used initially
+              const scoreResponse = await fetch("/api/scoreResume", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ keywords: parsedData.keywords }),
+              });
+              
+              const scoreData = await scoreResponse.json();
+              
+              // Find the score for our new file
+              const newFileScore = scoreData.allScores.find((score: any) => 
+                score.file === updatedFileName
+              );
+              
+              if (newFileScore) {
+                setNewScore(newFileScore);
+                
+                // Calculate improvement percentage
+                const improvement = newFileScore.scorePercent - (originalScore?.scorePercent || 0);
+                setImprovementPercent(improvement);
+              }
+            } catch (scoreErr) {
+              console.error("Error scoring updated resume:", scoreErr);
+            }
+          }
         } else {
           console.error('Failed to fetch PDF:', await pdfResponse.text());
           alert('Failed to generate PDF. Check console for details.');
@@ -826,6 +871,80 @@ export default function HomePage() {
               >
                 Download PDF
               </a>
+            </div>
+          </div>
+        )}
+
+        {/* Add this right after the PDF viewer section, before the final closing divs */}
+        {pdfUrl && originalScore && newScore && (
+          <div className="mt-8 bg-gray-100 p-4 rounded shadow">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Resume Score Improvement</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white p-4 rounded shadow">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Original Resume</h3>
+                <div className="flex items-center mb-2">
+                  <div className="w-full bg-gray-200 rounded-full h-4 mr-2">
+                    <div 
+                      className="bg-blue-600 h-4 rounded-full" 
+                      style={{ width: `${originalScore.scorePercent}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-lg font-bold">{originalScore.scorePercent}%</span>
+                </div>
+                <p className="text-gray-700">
+                  <span className="font-semibold">Keywords matched:</span> {originalScore.matchCount} of {originalScore.totalKeywords}
+                </p>
+              </div>
+              
+              <div className="bg-white p-4 rounded shadow">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Optimized Resume</h3>
+                <div className="flex items-center mb-2">
+                  <div className="w-full bg-gray-200 rounded-full h-4 mr-2">
+                    <div 
+                      className="bg-green-600 h-4 rounded-full" 
+                      style={{ width: `${newScore.scorePercent}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-lg font-bold">{newScore.scorePercent}%</span>
+                </div>
+                <p className="text-gray-700">
+                  <span className="font-semibold">Keywords matched:</span> {newScore.matchCount} of {newScore.totalKeywords}
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-4 bg-white p-4 rounded shadow">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Improvement: 
+                <span className={`ml-2 ${improvementPercent > 0 ? 'text-green-600' : improvementPercent < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                  {improvementPercent > 0 ? '+' : ''}{improvementPercent}%
+                </span>
+              </h3>
+              
+              {newScore.matchedKeywords.length > originalScore.matchedKeywords.length && (
+                <div className="mt-3">
+                  <h4 className="font-semibold text-gray-800">Newly Matched Keywords:</h4>
+                  <ul className="mt-1 list-disc list-inside">
+                    {newScore.matchedKeywords
+                      .filter(kw => !originalScore.matchedKeywords.includes(kw))
+                      .map((keyword, idx) => (
+                        <li key={idx} className="text-green-700">{keyword}</li>
+                      ))}
+                  </ul>
+                </div>
+              )}
+              
+              {newScore.unmatchedKeywords.length > 0 && (
+                <div className="mt-3">
+                  <h4 className="font-semibold text-gray-800">Still Unmatched Keywords:</h4>
+                  <ul className="mt-1 list-disc list-inside">
+                    {newScore.unmatchedKeywords.map((keyword, idx) => (
+                      <li key={idx} className="text-gray-700">{keyword}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         )}
