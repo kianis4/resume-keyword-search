@@ -27,7 +27,7 @@ export async function GET(request) {
     
     const rawLatexSkillsSection = skillsMatch ? skillsMatch[0] : '';
     
-    console.log('Raw LaTeX skills section found:', rawLatexSkillsSection.substring(0, 100) + '...');
+    // console.log('Raw LaTeX skills section found:', rawLatexSkillsSection.substring(0, 100) + '...');
     
     const prompt = `
       Extract the skills from this LaTeX resume skills section and return it as a JSON object.
@@ -62,7 +62,7 @@ export async function GET(request) {
     
     // Get raw content and log it for debugging
     let rawContent = completion.choices[0].message.content;
-    console.log('Raw response from OpenAI:', rawContent.substring(0, 200) + '...');
+    // console.log('Raw response from OpenAI:', rawContent.substring(0, 200) + '...');
     
     // Clean up the response by removing any code block markers
     let cleanedContent = rawContent
@@ -70,7 +70,7 @@ export async function GET(request) {
       .replace(/```/g, '')
       .trim();
     
-    console.log('Cleaned content:', cleanedContent.substring(0, 200) + '...');
+    // console.log('Cleaned content:', cleanedContent.substring(0, 200) + '...');
     
     let skills = {};
     try {

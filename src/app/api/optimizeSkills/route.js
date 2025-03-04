@@ -78,7 +78,7 @@ export async function POST(request) {
       .replace(/```/g, '')
       .trim();
     
-    console.log('Cleaned content:', cleanedContent.substring(0, 200) + '...');
+    // console.log('Cleaned content:', cleanedContent.substring(0, 200) + '...');
     
     let optimizedSkills = {};
     try {
