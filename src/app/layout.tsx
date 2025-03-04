@@ -28,6 +28,11 @@ export default function RootLayout({
       <body className="bg-gray-900">
         <Navigation />
         {children}
+        {/* Add a footer at the end of the page */}
+        <footer className="mt-16 text-center text-gray-500 text-sm">
+          <p>© 2024 SKomp<span className="text-blue-500">X</span>cel Calibrate</p>
+          <p className="mt-1">A product by SKompXcel Academic Solutions</p>
+        </footer>
       </body>
     </html>
   );
