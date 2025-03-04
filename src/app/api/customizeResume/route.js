@@ -10,40 +10,28 @@ export async function POST(request) {
     const resumePath = path.join(process.cwd(), "resumes", filename);
     const originalTex = fs.readFileSync(resumePath, "utf8");
 
+    // Update the prompt to be more specific about structure
     const prompt = `
-You are an AI that updates bullet points in a LaTeX resume. Keep the entire file exactly the same, 
-except replace each original bullet in "acceptedChanges" with the new text. Preserve all LaTeX 
-commands, packages, or other lines. Return only the complete updated LaTeX code for the section that is listed
-under experience.
+You are an AI that updates bullet points in a LaTeX resume. I will provide you with the entire resume file and 
+a list of bullet point changes. Your task is to:
 
-Here is an example section we are trying to update:
-%-----------EXPERIENCE-----------
-\section{Experience}
-\resumeSubHeadingListStart
-  \resumeSubheading
-    {Software \& IT Systems Dev}{Aug. 2024 -- Present}
-    {Burlington Training Centre}{Burlington, ON}
-    \resumeItemListStart
-      \resumeItem{Containerized critical applications with \textbf{Docker} and orchestrated multi-environment deployments using \textbf{Kubernetes}, reducing release cycle times by \textbf{40\%} and ensuring high system availability.}
-      \resumeItem{Automated end-to-end \textbf{CI/CD} workflows with \textbf{GitHub Actions} and \textbf{Jenkins}, integrating automated testing, code quality checks, and seamless rollouts across staging and production environments.}
-      \resumeItem{Implemented robust \textbf{Infrastructure as Code} using \textbf{Terraform} to provision and manage AWS resources (\textbf{EC2}, \textbf{S3}, \textbf{RDS}, \textbf{SNS}), significantly reducing manual provisioning overhead while enhancing scalability and consistency.}
-      \resumeItem{Configured comprehensive monitoring solutions with \textbf{Prometheus} and custom \textbf{Grafana} dashboards, enabling proactive performance tracking, rapid incident response, and a \textbf{50\%} reduction in system downtime.}
-    \resumeItemListEnd
+1. Identify the EXPERIENCE section in the resume
+2. Replace each original bullet with its corresponding new bullet in the "acceptedChanges" list
+3. Return ONLY the complete updated EXPERIENCE section, from the "%-----------EXPERIENCE-----------" line 
+   through the SINGLE final "\\resumeSubHeadingListEnd"
 
-  \resumeSubheading
-    {Junior Web Developer }{May 2021 -- Aug 2022}
-    {Giftcash Inc.}{Remote}
-    \resumeItemListStart
-      \resumeItem{Migrated a legacy \textbf{Python}/\textbf{Django} monolith to a \textbf{Node.js} serverless microservices architecture, achieving a \textbf{15\%} increase in scalability while reducing infrastructure overhead and enabling cost-effective elastic scaling.}
-      \resumeItem{Optimized \textbf{PostgreSQL} performance through strategic indexing, caching, and query optimization, reducing average response times by \textbf{20\%} and enhancing data retrieval efficiency under high loads.}
-      \resumeItem{Implemented robust data extraction workflows using \textbf{Puppeteer} and \textbf{Axios} in an Agile environment, automating gift card balance verifications across multiple provider platforms and boosting operational efficiency by \textbf{25\%}.}
-      \resumeItem{Established streamlined \textbf{CI/CD} pipelines with \textbf{Jenkins} and \textbf{GitHub Actions}, ensuring rapid, automated development cycles and seamless deployments across staging and production environments.}
-  \resumeItemListEnd
+IMPORTANT:
+- There must be EXACTLY ONE experience section with structure:
+  %-----------EXPERIENCE-----------
+  \\section{Experience}
+  \\resumeSubHeadingListStart
+    ... job entries ...
+  \\resumeSubHeadingListEnd
+  %-------------------------------------------
 
-We want to update just the '\resumeItems{} that are applicable and return the new %-----------EXPERIENCE-----------
-section.
-
-Ensure that the updated LaTeX code is valid and does not contain any syntax errors, best practices are follow, such as \textbf{} for bold text on technologies and impact, and that the formatting is consistent with the rest of the document.
+- Remove any duplicate job entries or extra \\resumeSubHeadingListEnd tags
+- End the experience section with "\\resumeSubHeadingListEnd" followed by "%-------------------------------------------"
+- Do not include any content after the experience section
 
 Current LaTeX content:
 """
@@ -62,8 +50,26 @@ ${JSON.stringify(acceptedChanges, null, 2)}
     });
 
     let updatedTex = completion.choices[0]?.message?.content || "";
-    const experienceSectionRegex = /%-----------EXPERIENCE-----------[\s\S]*?\\resumeSubHeadingListEnd/;
     updatedTex = updatedTex.replace(/```latex|```/g, "").trim();
+
+    // Ensure we have the correct section markers
+    if (!updatedTex.startsWith("%-----------EXPERIENCE-----------")) {
+      updatedTex = "%-----------EXPERIENCE-----------\n" + updatedTex;
+    }
+    
+    if (!updatedTex.endsWith("%-------------------------------------------")) {
+      updatedTex += "\n%-------------------------------------------";
+    }
+
+    // Ensure there's only one resumeSubHeadingListEnd
+    const parts = updatedTex.split("\\resumeSubHeadingListEnd");
+    if (parts.length > 2) {
+      // Keep only the first instance and its content
+      updatedTex = parts[0] + "\\resumeSubHeadingListEnd\n%-------------------------------------------";
+    }
+
+    // Change the regex to capture everything between EXPERIENCE and PROJECTS sections
+    const experienceSectionRegex = /%-+EXPERIENCE-+[\s\S]*?(?=%-+PROJECTS-+)/;
     const updatedResume = originalTex.replace(experienceSectionRegex, updatedTex);
 
     const updatedFileName = path.basename(resumePath, ".tex") + "_updated.tex";
@@ -71,7 +77,7 @@ ${JSON.stringify(acceptedChanges, null, 2)}
     fs.writeFileSync(newPath, updatedResume, "utf8");
 
     return NextResponse.json({ 
-      updatedTex,
+      updatedTex: updatedResume, 
       updatedFileName
     });
   } catch (error) {

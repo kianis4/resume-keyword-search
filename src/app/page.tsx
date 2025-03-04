@@ -65,10 +65,8 @@ export default function HomePage() {
   const [loadingExperiences, setLoadingExperiences] = useState(false);
 
   // Customization state for experience-level bullet changes
-  const [experienceBulletChanges, setExperienceBulletChanges] = useState<any[]>([]);
+  const [experienceChangeSets, setExperienceChangeSets] = useState<any[]>([]);
   const [currentExperienceIndex, setCurrentExperienceIndex] = useState<number | null>(null);
-  const [currentBulletChangeIndex, setCurrentBulletChangeIndex] = useState(0);
-  const [acceptedExperienceChanges, setAcceptedExperienceChanges] = useState<any[]>([]);
   const [customizationFlow, setCustomizationFlow] = useState<"idle" | "inProgress" | "completed">("idle");
 
   // Holds updated LaTeX from the server
@@ -163,7 +161,7 @@ export default function HomePage() {
         bullets: experience.bullets,
         idealCandidateDescription: parsedData?.idealCandidateDescription || "",
         jobDescription: jobDesc,
-        unmatchedKeywords: unmatched,  // Pass unmatched keywords here
+        unmatchedKeywords: unmatched,
       };
 
       const response = await fetch("/api/updateExperience", {
@@ -173,9 +171,18 @@ export default function HomePage() {
       });
       const data = await response.json();
       if (data.changes && Array.isArray(data.changes) && data.changes.length > 0) {
-        setExperienceBulletChanges(data.changes);
-        setCurrentBulletChangeIndex(0);
-        setAcceptedExperienceChanges([]);
+        // Update the experienceChangeSets for this specific experience
+        setExperienceChangeSets(prev => {
+          const updated = [...prev];
+          updated[expIndex] = {
+            bulletChanges: data.changes,
+            currentBulletChangeIndex: 0,
+            acceptedChanges: [],
+            status: "inProgress" as const
+          };
+          return updated;
+        });
+        
         setCurrentExperienceIndex(expIndex);
         setCustomizationFlow("inProgress");
       } else {
@@ -188,9 +195,21 @@ export default function HomePage() {
 
   // 4) Accept or Skip bullet changes for the current experience
   function handleAcceptBulletChange() {
-    if (currentBulletChangeIndex < experienceBulletChanges.length) {
-      const change = experienceBulletChanges[currentBulletChangeIndex];
-      setAcceptedExperienceChanges((prev) => [...prev, change]);
+    if (currentExperienceIndex === null) return;
+    
+    const expIndex = currentExperienceIndex;
+    const changeSet = experienceChangeSets[expIndex];
+    
+    if (changeSet && changeSet.currentBulletChangeIndex < changeSet.bulletChanges.length) {
+      const change = changeSet.bulletChanges[changeSet.currentBulletChangeIndex];
+      setExperienceChangeSets(prev => {
+        const updated = [...prev];
+        updated[expIndex] = {
+          ...updated[expIndex],
+          acceptedChanges: [...updated[expIndex].acceptedChanges, change],
+        };
+        return updated;
+      });
     }
     moveToNextBulletChange();
   }
@@ -200,18 +219,45 @@ export default function HomePage() {
   }
 
   function moveToNextBulletChange() {
-    const newIndex = currentBulletChangeIndex + 1;
-    if (newIndex < experienceBulletChanges.length) {
-      setCurrentBulletChangeIndex(newIndex);
+    if (currentExperienceIndex === null) return;
+    
+    const expIndex = currentExperienceIndex;
+    const changeSet = experienceChangeSets[expIndex];
+    
+    if (!changeSet) return;
+    
+    const newIndex = changeSet.currentBulletChangeIndex + 1;
+    if (newIndex < changeSet.bulletChanges.length) {
+      setExperienceChangeSets(prev => {
+        const updated = [...prev];
+        updated[expIndex] = {
+          ...updated[expIndex],
+          currentBulletChangeIndex: newIndex,
+        };
+        return updated;
+      });
     } else {
-      setCustomizationFlow("completed");
+      setExperienceChangeSets(prev => {
+        const updated = [...prev];
+        updated[expIndex] = {
+          ...updated[expIndex],
+          status: "completed",
+        };
+        return updated;
+      });
+      setCustomizationFlow("idle"); // Return to idle state so user can optimize other experiences
     }
   }
 
   // 5) Inject accepted changes into LaTeX
   async function handleInjectIntoLatex() {
     try {
-      if (acceptedExperienceChanges.length === 0) {
+      // Gather all accepted changes from all experiences
+      const allAcceptedChanges = experienceChangeSets.flatMap(set => 
+        set?.acceptedChanges || []
+      );
+      
+      if (allAcceptedChanges.length === 0) {
         alert("No accepted changes to inject!");
         return;
       }
@@ -220,11 +266,12 @@ export default function HomePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
-          acceptedChanges: acceptedExperienceChanges, 
+          acceptedChanges: allAcceptedChanges, 
           filename: chosenFilename 
         }),
       });
       
+      // Rest of the function remains the same
       const data = await response.json();
       
       if (data.error) {
@@ -232,10 +279,8 @@ export default function HomePage() {
       } else if (data.updatedTex) {
         setUpdatedLatex(data.updatedTex);
         
-        // Store the updated filename - fix the property name to match what's returned from the API
-        const updatedFileName = data.updatedFileName;  // Changed from updatedFilename to updatedFileName
+        const updatedFileName = data.updatedFileName;
         
-        // Fetch the generated PDF using the updated filename
         const pdfResponse = await fetch(`/api/compilePDF?filename=${updatedFileName}`);
         
         if (pdfResponse.ok) {
@@ -393,11 +438,19 @@ export default function HomePage() {
                     ))}
                   </ul>
                 )}
+                {/* Show "Optimize This Experience" button only if not already optimized or in progress */}
                 <button
-                  className="mt-2 px-3 py-1 bg-green-600 text-white rounded"
+                  className={`mt-2 px-3 py-1 ${
+                    experienceChangeSets[expIndex]?.status === "completed" 
+                      ? "bg-gray-500" 
+                      : "bg-green-600 hover:bg-green-700"
+                  } text-white rounded`}
                   onClick={() => handleOptimizeExperience(expIndex)}
+                  disabled={experienceChangeSets[expIndex]?.status === "completed"}
                 >
-                  Optimize This Experience
+                  {experienceChangeSets[expIndex]?.status === "completed" 
+                    ? "Optimization Completed" 
+                    : "Optimize This Experience"}
                 </button>
               </div>
             ))}
@@ -405,22 +458,22 @@ export default function HomePage() {
         )}
 
         {/* Step D: Bullet-level customization flow for the selected experience */}
-        {customizationFlow === "inProgress" && experienceBulletChanges.length > 0 && (
+        {customizationFlow === "inProgress" && currentExperienceIndex !== null && experienceChangeSets[currentExperienceIndex] && (
           <div className="mt-8 bg-gray-200 p-4 rounded shadow">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Bullet Suggestions for Experience #{currentExperienceIndex! + 1}
+              Bullet Suggestions for Experience #{currentExperienceIndex + 1}
             </h2>
             <p className="text-gray-800 mb-2">
-              Reviewing suggestion {currentBulletChangeIndex + 1} of {experienceBulletChanges.length}
+              Reviewing suggestion {experienceChangeSets[currentExperienceIndex].currentBulletChangeIndex + 1} of {experienceChangeSets[currentExperienceIndex].bulletChanges.length}
             </p>
             <div className="mb-4">
               <p className="text-gray-800 font-semibold">Original Bullet:</p>
               <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
-                {experienceBulletChanges[currentBulletChangeIndex].originalBullet}
+                {experienceChangeSets[currentExperienceIndex].bulletChanges[experienceChangeSets[currentExperienceIndex].currentBulletChangeIndex].originalBullet}
               </pre>
               <p className="text-gray-800 font-semibold mt-2">Proposed New Bullet:</p>
               <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
-                {experienceBulletChanges[currentBulletChangeIndex].newBullet}
+                {experienceChangeSets[currentExperienceIndex].bulletChanges[experienceChangeSets[currentExperienceIndex].currentBulletChangeIndex].newBullet}
               </pre>
             </div>
             <div className="flex gap-4">
@@ -440,17 +493,49 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* Add a summary section that shows all accepted changes and inject button */}
+        {experienceChangeSets.some(set => set?.acceptedChanges?.length > 0) && customizationFlow !== "inProgress" && (
+          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Accepted Changes Summary</h2>
+            
+            {experienceChangeSets.map((set, expIndex) => (
+              set?.acceptedChanges?.length > 0 && (
+                <div key={expIndex} className="mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800">Experience #{expIndex + 1}</h3>
+                  <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
+                    <ul className="list-disc list-inside ml-4">
+                      {set.acceptedChanges.map((change, index) => (
+                        <li key={index} className="text-sm text-gray-900 mb-2">
+                          <p><strong>Original:</strong> {change.originalBullet}</p>
+                          <p><strong>New:</strong> {change.newBullet}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  </pre>
+                </div>
+              )
+            ))}
+            
+            <button
+              onClick={handleInjectIntoLatex}
+              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+            >
+              Inject All Changes Into LaTeX
+            </button>
+          </div>
+        )}
+
         {/* Step E: Final accepted changes summary */}
         {customizationFlow === "completed" && (
           <div className="mt-8 bg-gray-200 p-4 rounded shadow">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Customization Flow Completed</h2>
-            {acceptedExperienceChanges.length > 0 ? (
+            {experienceChangeSets.flatMap(set => set?.acceptedChanges || []).length > 0 ? (
               <>
                 <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
                   <div className="mt-4"></div>
                   <h3 className="text-lg font-semibold text-gray-800">Accepted Bullet Changes:</h3>
                   <ul className="list-disc list-inside ml-4">
-                    {acceptedExperienceChanges.map((change, index) => (
+                    {experienceChangeSets.flatMap(set => set?.acceptedChanges || []).map((change, index) => (
                       <li key={index} className="text-sm text-gray-900 mb-2">
                         <p><strong>Original Bullet:</strong> {change.originalBullet}</p>
                         <p><strong>New Bullet:</strong> {change.newBullet}</p>
