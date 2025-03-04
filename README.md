@@ -64,7 +64,7 @@ This application streamlines the job application process by eliminating the manu
 
 1. Clone the repository
 ```
-<copilot-edited-file>```bash
+```bash
 git clone https://github.com/yourusername/resume-tailoring-system.git
 cd resume-tailoring-system
 ```
