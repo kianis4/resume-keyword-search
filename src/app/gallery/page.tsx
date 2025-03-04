@@ -14,6 +14,8 @@ export default function GalleryPage() {
   const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
   const [compiling, setCompiling] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedLatex, setSelectedLatex] = useState<string | null>(null);
+  const [loadingLatex, setLoadingLatex] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchResumes() {
@@ -50,6 +52,7 @@ export default function GalleryPage() {
     try {
       setError(null);
       setCompiling(filename);
+      setSelectedLatex(null); // Add this line to clear LaTeX when viewing PDF
       const response = await fetch(`/api/compilePDF?filename=${filename}`);
 
       if (!response.ok) {
@@ -64,6 +67,29 @@ export default function GalleryPage() {
       setError(error instanceof Error ? error.message : 'Unknown error generating PDF');
     } finally {
       setCompiling(null);
+    }
+  }
+
+  async function handleViewLatex(filename: string) {
+    if (loadingLatex) return;
+
+    try {
+      setError(null);
+      setLoadingLatex(filename);
+      const response = await fetch(`/api/getLatexContent?filename=${filename}`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch LaTeX: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setSelectedLatex(data.content);
+      setSelectedPdf(null); // Hide PDF viewer when showing LaTeX
+    } catch (error) {
+      console.error('Error viewing LaTeX:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error fetching LaTeX');
+    } finally {
+      setLoadingLatex(null);
     }
   }
 
@@ -131,6 +157,13 @@ export default function GalleryPage() {
                           Delete
                         </button>
                         <button
+                          onClick={() => handleViewLatex(resume.name)}
+                          disabled={loadingLatex === resume.name}
+                          className={`px-3 py-1 text-sm ${loadingLatex === resume.name ? 'bg-gray-400' : 'bg-yellow-600 hover:bg-yellow-700'} text-white rounded`}
+                        >
+                          {loadingLatex === resume.name ? 'Loading...' : 'View LaTeX'}
+                        </button>
+                        <button
                           onClick={() => handleViewPdf(resume.name)}
                           disabled={compiling === resume.name}
                           className={`px-3 py-1 text-sm ${compiling === resume.name ? 'bg-gray-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded`}
@@ -145,10 +178,13 @@ export default function GalleryPage() {
             )}
           </div>
           
+          {/* Update the viewer section to show either PDF or LaTeX */}
           <div className="bg-gray-100 p-6 rounded shadow col-span-2 min-h-[600px]">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">PDF Viewer</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+              {selectedLatex ? 'LaTeX Source' : 'PDF Viewer'}
+            </h2>
             
-            {selectedPdf ? (
+            {selectedPdf && !selectedLatex ? (
               <div className="h-[700px] border border-gray-300 rounded">
                 <iframe
                   src={selectedPdf}
@@ -158,9 +194,15 @@ export default function GalleryPage() {
                   title="Resume PDF"
                 />
               </div>
+            ) : selectedLatex ? (
+              <div className="h-[700px] border border-gray-300 rounded bg-gray-50 overflow-auto">
+                <pre className="p-4 text-sm font-mono text-gray-800">
+                  {selectedLatex}
+                </pre>
+              </div>
             ) : (
               <div className="h-[700px] flex items-center justify-center border border-gray-300 rounded bg-gray-50">
-                <p className="text-gray-500">Select a resume to view its PDF</p>
+                <p className="text-gray-500">Select a resume to view</p>
               </div>
             )}
           </div>
