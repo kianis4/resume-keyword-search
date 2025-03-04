@@ -1,17 +1,6 @@
 "use client";
 
-// TODO: Implement skills section updating
-// This will allow users to customize the skills section of their resume based on the job description
-// Features to implement:
-// - Extract skills from job description
-// - Compare with current skills in resume
-// - Suggest skills to add/prioritize
-// - Allow manual skills editing
-// - Update skills section in LaTeX resume
-
-
 import { useState, useEffect } from "react";
-// import SkillsEditor from "@/components/SkillsEditor";
 
 /**
  * HomePage component for the Resume Tailoring System.
@@ -109,6 +98,9 @@ export default function HomePage() {
   const [newScore, setNewScore] = useState<any>(null);
   const [improvementPercent, setImprovementPercent] = useState<number | null>(null);
 
+  // Add this new state variable for tracking the selected resume
+  const [selectedResumeFile, setSelectedResumeFile] = useState<string | null>(null);
+
   // 1) Parse & Score JD
   async function handleParseAndScore() {
     setLoading(true);
@@ -173,15 +165,15 @@ export default function HomePage() {
 
   // 2) Load full experiences using extractBulletPoints route
   async function handleLoadExperiences() {
-    if (!scoreResults?.bestResume?.file) {
-      alert("No best resume file found. Please parse & score first.");
+    if (!selectedResumeFile) {
+      alert("Please select a resume first.");
       return;
     }
+    
     setLoadingExperiences(true);
     try {
-      const file = scoreResults.bestResume.file;
-      setChosenFilename(file); // Set the chosen filename based on the best resume file
-      const response = await fetch(`/api/extractBulletPoints?file=${file}`);
+      setChosenFilename(selectedResumeFile); // Use the selected filename
+      const response = await fetch(`/api/extractBulletPoints?file=${selectedResumeFile}`);
       const data = await response.json();
       if (data.experiences && Array.isArray(data.experiences)) {
         setExtractedExperiences(data.experiences);
@@ -198,18 +190,29 @@ export default function HomePage() {
 
   // 3) Optimize an entire experience by sending its details to updateExperience route
   async function handleOptimizeExperience(expIndex: number) {
-    if (!scoreResults?.bestResume) {
-      alert("No best resume found. Parse & Score first.");
+    if (!selectedResumeFile) {
+      alert("No resume selected. Please select a resume first.");
       return;
     }
+    
     const experience = extractedExperiences[expIndex];
     if (!experience) {
       alert("Experience not found.");
       return;
     }
 
-    // Retrieve unmatchedKeywords from the best resume object
-    const unmatched = scoreResults.bestResume.unmatchedKeywords || [];
+    // Find the selected resume's data from scoreResults
+    const selectedResumeData = scoreResults.allScores.find(
+      (score: any) => score.file === selectedResumeFile
+    );
+    
+    if (!selectedResumeData) {
+      alert("Selected resume data not found.");
+      return;
+    }
+
+    // Retrieve unmatchedKeywords from the selected resume object
+    const unmatched = selectedResumeData.unmatchedKeywords || [];
 
     try {
       const payload = {
@@ -539,47 +542,79 @@ export default function HomePage() {
               <strong>Best Resume:</strong> {scoreResults.bestResume.file} (
               {scoreResults.bestResume.scorePercent}% match)
             </p>
-            <h3 className="font-semibold text-gray-800">All Scores</h3>
+            <h3 className="font-semibold text-gray-800 mb-3">Top 3 Resumes</h3>
+            
+            {/* Filter and display only top 3 resumes */}
             <div className="space-y-4">
-              {scoreResults.allScores.map((result: any, index: number) => (
-                <div key={index} className="bg-gray-100 p-4 rounded shadow">
-                  <h3 className="text-lg font-semibold text-gray-800">File: {result.file}</h3>
-                  <p className="text-gray-800">
-                    <strong>Match Count:</strong> {result.matchCount} / {result.totalKeywords}
-                  </p>
-                  <p className="text-gray-800">
-                    <strong>Score Percent:</strong> {result.scorePercent}%
-                  </p>
-                  <div className="mt-2">
-                    <h4 className="text-md font-semibold text-gray-800">Matched Keywords:</h4>
-                    <ul className="list-disc list-inside ml-4">
-                      {result.matchedKeywords.map((keyword: string, i: number) => (
-                        <li key={i} className="text-sm text-gray-800">{keyword}</li>
-                      ))}
-                    </ul>
+              {scoreResults.allScores
+                .sort((a: any, b: any) => b.scorePercent - a.scorePercent)
+                .slice(0, 3)
+                .map((result: any, index: number) => (
+                  <div key={index} className="bg-gray-100 p-4 rounded shadow">
+                    {/* Add a radio button for selection */}
+                    <div className="flex items-center mb-2">
+                      <input
+                        type="radio"
+                        id={`resume-${index}`}
+                        name="selectedResume"
+                        value={result.file}
+                        checked={selectedResumeFile === result.file}
+                        onChange={(e) => setSelectedResumeFile(e.target.value)}
+                        className="mr-2"
+                      />
+                      <label htmlFor={`resume-${index}`} className="text-lg font-semibold text-gray-800 cursor-pointer">
+                        File: {result.file}
+                      </label>
+                    </div>
+                    
+                    <p className="text-gray-800">
+                      <strong>Match Count:</strong> {result.matchCount} / {result.totalKeywords}
+                    </p>
+                    <p className="text-gray-800">
+                      <strong>Score Percent:</strong> {result.scorePercent}%
+                    </p>
+                    <div className="mt-2">
+                      <h4 className="text-md font-semibold text-gray-800">Matched Keywords:</h4>
+                      <ul className="list-disc list-inside ml-4">
+                        {result.matchedKeywords.map((keyword: string, i: number) => (
+                          <li key={i} className="text-sm text-gray-800">{keyword}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="mt-2">
+                      <h4 className="text-md font-semibold text-gray-800">Unmatched Keywords:</h4>
+                      <ul className="list-disc list-inside ml-4">
+                        {result.unmatchedKeywords.map((keyword: string, i: number) => (
+                          <li key={i} className="text-sm text-gray-800">{keyword}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div className="mt-2">
+                      <h4 className="text-md font-semibold text-gray-800">Recommendation:</h4>
+                      <p className="text-sm text-gray-800">{result.recommendation}</p>
+                    </div>
                   </div>
-                  <div className="mt-2">
-                    <h4 className="text-md font-semibold text-gray-800">Unmatched Keywords:</h4>
-                    <ul className="list-disc list-inside ml-4">
-                      {result.unmatchedKeywords.map((keyword: string, i: number) => (
-                        <li key={i} className="text-sm text-gray-800">{keyword}</li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="mt-2">
-                    <h4 className="text-md font-semibold text-gray-800">Recommendation:</h4>
-                    <p className="text-sm text-gray-800">{result.recommendation}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              }
             </div>
+            
+            {/* Update the load experiences button to be disabled unless a resume is selected */}
             <button
               onClick={handleLoadExperiences}
-              disabled={!scoreResults || !scoreResults.bestResume}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              disabled={!selectedResumeFile}
+              className={`mt-4 px-4 py-2 ${
+                selectedResumeFile 
+                  ? "bg-blue-600 hover:bg-blue-700" 
+                  : "bg-gray-400 cursor-not-allowed"
+              } text-white rounded transition-colors`}
             >
               {loadingExperiences ? "Loading Experiences..." : "Load Experiences"}
             </button>
+            {!selectedResumeFile && (
+              <p className="mt-2 text-amber-600 text-sm">
+                Please select one of the resumes above to proceed.
+              </p>
+            )}
           </div>
         )}
 
@@ -776,7 +811,7 @@ export default function HomePage() {
                   type="text"
                   value={newFileName}
                   onChange={(e) => setNewFileName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-300"
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-300 text-gray-900"
                   placeholder="company_position"
                 />
                 <p className="text-xs text-gray-600 mt-1">
