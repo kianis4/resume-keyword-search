@@ -63,7 +63,6 @@ This application streamlines the job application process by eliminating the manu
 ### Installation
 
 1. Clone the repository
-```
 ```bash
 git clone https://github.com/yourusername/resume-tailoring-system.git
 cd resume-tailoring-system
@@ -106,13 +105,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - **Document Parsing**: PDF and DOCX extraction tools
 - **UI Components**: Custom React components with responsive design
 
-# Updated README.md for Resume Tailoring System
-
-Here's a completely updated README with comprehensive documentation for your project:
-
 ### [README.md](file:///Users/suley/Desktop/resume-keyword-search/README.md)
 
-```markdown
 # Resume Tailoring System
 
 An AI-powered web application that automatically tailors your resume to specific job descriptions, optimizing your chances of passing through Applicant Tracking Systems (ATS) and impressing human recruiters.
@@ -325,4 +319,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 Created with ❤️ to simplify the job application process
-```
