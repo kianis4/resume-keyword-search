@@ -6,7 +6,7 @@ import openai from "../../../../lib/openaiClient"; // Adjust path if needed
 
 export async function POST(request) {
   try {
-    const { acceptedChanges, filename } = await request.json();
+    const { acceptedChanges, filename, newFileName } = await request.json();
     const resumePath = path.join(process.cwd(), "resumes", filename);
     const originalTex = fs.readFileSync(resumePath, "utf8");
 
@@ -72,7 +72,25 @@ ${JSON.stringify(acceptedChanges, null, 2)}
     const experienceSectionRegex = /%-+EXPERIENCE-+[\s\S]*?(?=%-+PROJECTS-+)/;
     const updatedResume = originalTex.replace(experienceSectionRegex, updatedTex);
 
-    const updatedFileName = path.basename(resumePath, ".tex") + "_updated.tex";
+    // Create a filename-safe string by removing special characters
+    const sanitizeForFilename = (str) => {
+      if (!str) return '';
+      return str.toLowerCase()
+               .replace(/[^a-z0-9]/gi, '_') // Replace non-alphanumeric with underscore
+               .replace(/_+/g, '_')          // Replace multiple underscores with single
+               .replace(/^_|_$/g, '')        // Remove leading/trailing underscores
+               .substring(0, 50);            // Limit length
+    };
+
+    // Use the provided newFileName directly
+    let updatedFileName;
+    if (newFileName) {
+      updatedFileName = newFileName;  // Use the user-provided filename
+    } else {
+      // Fallback to original naming if no new name provided
+      updatedFileName = path.basename(resumePath, ".tex") + "_updated.tex";
+    }
+
     const newPath = path.join(path.dirname(resumePath), updatedFileName);
     fs.writeFileSync(newPath, updatedResume, "utf8");
 

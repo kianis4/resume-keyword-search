@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 /**
  * HomePage component for the Resume Tailoring System.
@@ -78,6 +78,11 @@ export default function HomePage() {
   // Holds the PDF URL
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
+  // Add these new state variables instead
+  const [newFileName, setNewFileName] = useState("");
+  const [extractedCompany, setExtractedCompany] = useState("");
+  const [extractedPosition, setExtractedPosition] = useState("");
+
   // 1) Parse & Score JD
   async function handleParseAndScore() {
     setLoading(true);
@@ -90,6 +95,32 @@ export default function HomePage() {
       const parsed = await parseResponse.json();
       setParsedData(parsed);
 
+      // Extract company and position from job description
+      const jobLines = jobDesc.split('\n');
+      let company = "";
+      let position = "";
+      
+      // Simple extraction logic - could be enhanced
+      for (const line of jobLines) {
+        if (line.toLowerCase().includes('company:')) {
+          company = line.split(':')[1]?.trim() || "";
+        }
+        if (line.toLowerCase().includes('position:') || 
+            line.toLowerCase().includes('job title:') ||
+            line.toLowerCase().includes('role:')) {
+          position = line.split(':')[1]?.trim() || "";
+        }
+        
+        // Try to extract from the first line if it looks like a job title
+        if (!position && line.length < 100 && !line.includes(':')) {
+          position = line.trim();
+        }
+      }
+
+      setExtractedCompany(company || "Company");
+      setExtractedPosition(position || "Position");
+
+      // Rest of your existing code
       if (parsed.keywords) {
         const scoreResponse = await fetch("/api/scoreResume", {
           method: "POST",
@@ -249,10 +280,9 @@ export default function HomePage() {
     }
   }
 
-  // 5) Inject accepted changes into LaTeX
+  // Update handleInjectIntoLatex to show the modal
   async function handleInjectIntoLatex() {
     try {
-      // Gather all accepted changes from all experiences
       const allAcceptedChanges = experienceChangeSets.flatMap(set => 
         set?.acceptedChanges || []
       );
@@ -262,16 +292,21 @@ export default function HomePage() {
         return;
       }
       
+      if (!newFileName) {
+        alert("Filename cannot be empty!");
+        return;
+      }
+      
       const response = await fetch("/api/customizeResume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           acceptedChanges: allAcceptedChanges, 
-          filename: chosenFilename 
+          filename: chosenFilename,
+          newFileName: newFileName.endsWith('.tex') ? newFileName : `${newFileName}.tex`
         }),
       });
       
-      // Rest of the function remains the same
       const data = await response.json();
       
       if (data.error) {
@@ -299,6 +334,10 @@ export default function HomePage() {
       alert("Error injecting changes to LaTeX.");
     }
   }
+
+  useEffect(() => {
+    // code here
+  }, [extractedCompany, extractedPosition]);
 
   return (
     <main className="min-h-screen bg-gray-900 p-8">
@@ -516,12 +555,31 @@ export default function HomePage() {
               )
             ))}
             
-            <button
-              onClick={handleInjectIntoLatex}
-              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
-            >
-              Inject All Changes Into LaTeX
-            </button>
+            <div className="mt-4 flex flex-col md:flex-row gap-2">
+              <div className="flex-grow">
+                <label className="block text-gray-800 font-semibold mb-1">
+                  Save Resume As:
+                </label>
+                <input
+                  type="text"
+                  value={newFileName}
+                  onChange={(e) => setNewFileName(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-300"
+                  placeholder="company_position"
+                />
+                <p className="text-xs text-gray-600 mt-1">
+                  .tex extension will be added automatically
+                </p>
+              </div>
+              <div className="flex items-end">
+                <button
+                  onClick={handleInjectIntoLatex}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 h-10 whitespace-nowrap"
+                >
+                  Inject All Changes Into LaTeX
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
