@@ -510,63 +510,132 @@ export default function HomePage() {
           </ol>
         </div>
 
-        {/* Step A: Paste JD + Parse/Score */}
-        <label className="block text-white font-semibold mb-2">
-          Paste Job Description:
-        </label>
-        <textarea
-          value={jobDesc}
-          onChange={(e) => setJobDesc(e.target.value)}
-          rows={8}
-          className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-300"
-          placeholder="Enter or paste the job description here..."
-        />
-        <button
-          onClick={handleParseAndScore}
-          className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
-          disabled={loading}
-        >
-          {loading ? "Parsing & Scoring..." : "Parse & Score Resumes"}
-        </button>
+        {/* Add a progress indicator at the top */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center">
+              <div className={`rounded-full w-8 h-8 flex items-center justify-center ${parsedData ? 'bg-blue-500' : 'bg-gray-700'} text-white font-medium`}>1</div>
+              <div className="ml-2 text-white">Parse Job</div>
+            </div>
+            <div className={`flex-grow border-t mx-4 ${extractedExperiences.length > 0 ? 'border-blue-500' : 'border-gray-700'}`}></div>
+            <div className="flex items-center">
+              <div className={`rounded-full w-8 h-8 flex items-center justify-center ${extractedExperiences.length > 0 ? 'bg-blue-500' : 'bg-gray-700'} text-white font-medium`}>2</div>
+              <div className="ml-2 text-white">Optimize</div>
+            </div>
+            <div className={`flex-grow border-t mx-4 ${pdfUrl ? 'border-blue-500' : 'border-gray-700'}`}></div>
+            <div className="flex items-center">
+              <div className={`rounded-full w-8 h-8 flex items-center justify-center ${pdfUrl ? 'bg-blue-500' : 'bg-gray-700'} text-white font-medium`}>3</div>
+              <div className="ml-2 text-white">Generate</div>
+            </div>
+          </div>
+        </div>
 
-        {/* Display Parsed JD */}
+        {/* Step A: Paste JD + Parse/Score with improved styling */}
+        <div className="bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg mb-8">
+          <label className="block text-white font-semibold mb-3 flex items-center">
+            <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Job Description
+          </label>
+          <textarea
+            value={jobDesc}
+            onChange={(e) => setJobDesc(e.target.value)}
+            rows={8}
+            className="w-full p-4 bg-gray-900 border border-gray-700 text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            placeholder="Enter or paste the job description here..."
+          />
+          <button
+            onClick={handleParseAndScore}
+            className="mt-4 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center justify-center"
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                Analyze Job & Score Resumes
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Update the Parsed Data section styling */}
         {parsedData && (
-          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Parsed Data</h2>
-            <pre className="text-sm text-gray-900 bg-gray-50 p-4 rounded border border-gray-200 overflow-auto whitespace-pre-wrap break-words">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-800">Keywords:</h3>
-                <ul className="list-disc list-inside ml-4">
-                  {parsedData.keywords.map((keyword: string, index: number) => (
-                    <li key={index} className="text-sm text-gray-900">{keyword}</li>
-                  ))}
-                </ul>
-                <h3 className="text-lg font-semibold text-gray-800 mt-4">Ideal Candidate Description:</h3>
-                <p className="text-sm text-gray-900">{parsedData.idealCandidateDescription}</p>
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Parsed Job Data
+            </h2>
+            <div className="bg-gray-900 border border-gray-700 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-300 mb-3">Keywords</h3>
+              <div className="flex flex-wrap gap-2">
+                {parsedData.keywords.map((keyword: string, index: number) => (
+                  <span key={index} className="px-2 py-1 bg-blue-900/40 border border-blue-700/50 rounded-md text-blue-300 text-sm">
+                    {keyword}
+                  </span>
+                ))}
               </div>
-            </pre>
+            </div>
+            
+            <div className="mt-4 bg-gray-900 border border-gray-700 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-300 mb-3">Ideal Candidate Profile</h3>
+              <p className="text-gray-300 whitespace-pre-wrap">{parsedData.idealCandidateDescription}</p>
+            </div>
           </div>
         )}
 
         {/* Step B: Show Scoring Results */}
+        {/* Improve the resume selection cards */}
         {scoreResults && (
-          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Resume Scoring Results</h2>
-            <p className="mb-2 text-gray-800">
-              <strong>Best Resume:</strong> {scoreResults.bestResume.file} (
-              {scoreResults.bestResume.scorePercent}% match)
-            </p>
-            <h3 className="font-semibold text-gray-800 mb-3">Top 3 Resumes</h3>
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Resume Match Results
+            </h2>
             
-            {/* Filter and display only top 3 resumes */}
+            <p className="mb-4 text-gray-300">
+              <span className="font-medium">Best Match:</span> {scoreResults.bestResume.file} (
+              <span className="text-blue-400 font-semibold">{scoreResults.bestResume.scorePercent}%</span> match)
+            </p>
+            
+            {/* Top 3 resumes with improved styling */}
+            <h3 className="font-semibold text-white mb-3 flex items-center">
+              <svg className="w-4 h-4 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+              Select Resume to Optimize
+            </h3>
+            
             <div className="space-y-4">
               {scoreResults.allScores
                 .sort((a: any, b: any) => b.scorePercent - a.scorePercent)
                 .slice(0, 3)
                 .map((result: any, index: number) => (
-                  <div key={index} className="bg-gray-100 p-4 rounded shadow">
-                    {/* Add a radio button for selection */}
-                    <div className="flex items-center mb-2">
+                  <div 
+                    key={index} 
+                    className={`
+                      p-4 rounded-lg border transition-all cursor-pointer transform hover:scale-[1.01]
+                      ${selectedResumeFile === result.file 
+                        ? 'bg-blue-900/30 border-blue-500 shadow-md shadow-blue-900/20' 
+                        : 'bg-gray-900/50 border-gray-700 hover:border-gray-600'}
+                    `}
+                    onClick={() => setSelectedResumeFile(result.file)}
+                  >
+                    <div className="flex items-center mb-3">
                       <input
                         type="radio"
                         id={`resume-${index}`}
@@ -574,105 +643,154 @@ export default function HomePage() {
                         value={result.file}
                         checked={selectedResumeFile === result.file}
                         onChange={(e) => setSelectedResumeFile(e.target.value)}
-                        className="mr-2"
+                        className="mr-2 h-4 w-4 accent-blue-500"
                       />
-                      <label htmlFor={`resume-${index}`} className="text-lg font-semibold text-gray-800 cursor-pointer">
-                        File: {result.file}
+                      <label htmlFor={`resume-${index}`} className="text-lg font-semibold text-gray-200 cursor-pointer truncate">
+                        {result.file}
                       </label>
+                      <span className="ml-auto px-2 py-1 bg-gray-800 rounded text-blue-400 font-semibold text-sm">
+                        {result.scorePercent}%
+                      </span>
                     </div>
                     
-                    <p className="text-gray-800">
-                      <strong>Match Count:</strong> {result.matchCount} / {result.totalKeywords}
-                    </p>
-                    <p className="text-gray-800">
-                      <strong>Score Percent:</strong> {result.scorePercent}%
-                    </p>
-                    <div className="mt-2">
-                      <h4 className="text-md font-semibold text-gray-800">Matched Keywords:</h4>
-                      <ul className="list-disc list-inside ml-4">
+                    {/* Keyword match indicator */}
+                    <div className="mb-3">
+                      <div className="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>{result.matchCount} of {result.totalKeywords} keywords</span>
+                        <span>{result.scorePercent}%</span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full" 
+                          style={{ width: `${result.scorePercent}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    {/* Matched keywords */}
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium text-gray-400 mb-2">
+                        <svg className="w-4 h-4 mr-1 inline text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Matched Keywords:
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5 mb-3">
                         {result.matchedKeywords.map((keyword: string, i: number) => (
-                          <li key={i} className="text-sm text-gray-800">{keyword}</li>
+                          <span key={i} className="px-1.5 py-0.5 bg-green-900/30 border border-green-700/50 rounded-md text-green-400 text-xs">
+                            {keyword}
+                          </span>
                         ))}
-                      </ul>
+                      </div>
                     </div>
+                    
+                    {/* Unmatched keywords */}
                     <div className="mt-2">
-                      <h4 className="text-md font-semibold text-gray-800">Unmatched Keywords:</h4>
-                      <ul className="list-disc list-inside ml-4">
+                      <h4 className="text-sm font-medium text-gray-400 mb-2">
+                        <svg className="w-4 h-4 mr-1 inline text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Missing Keywords:
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5">
                         {result.unmatchedKeywords.map((keyword: string, i: number) => (
-                          <li key={i} className="text-sm text-gray-800">{keyword}</li>
+                          <span key={i} className="px-1.5 py-0.5 bg-amber-900/20 border border-amber-700/40 rounded-md text-amber-300 text-xs">
+                            {keyword}
+                          </span>
                         ))}
-                      </ul>
+                      </div>
                     </div>
-                    <div className="mt-2">
-                      <h4 className="text-md font-semibold text-gray-800">Recommendation:</h4>
-                      <p className="text-sm text-gray-800">{result.recommendation}</p>
-                    </div>
+                    
+                    {/* Resume recommendation */}
+                    {result.recommendation && (
+                      <div className="mt-3 text-xs text-gray-400 italic border-t border-gray-700 pt-2">
+                        <span className="font-medium">Recommendation:</span> {result.recommendation}
+                      </div>
+                    )}
                   </div>
                 ))
               }
             </div>
             
-            {/* Update the load experiences button to be disabled unless a resume is selected */}
             <button
               onClick={handleLoadExperiences}
               disabled={!selectedResumeFile}
-              className={`mt-4 px-4 py-2 ${
-                selectedResumeFile 
-                  ? "bg-blue-600 hover:bg-blue-700" 
-                  : "bg-gray-400 cursor-not-allowed"
-              } text-white rounded transition-colors`}
+              className={`
+                mt-6 px-6 py-3 rounded-md transition-all flex items-center justify-center
+                ${selectedResumeFile 
+                  ? "bg-blue-600 hover:bg-blue-700 transform hover:scale-[1.02]" 
+                  : "bg-gray-700 cursor-not-allowed"}
+                text-white
+              `}
             >
-              {loadingExperiences ? "Loading Experiences..." : "Load Experiences"}
+              {loadingExperiences ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading Resume...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Load Resume Content
+                </>
+              )}
             </button>
-            {!selectedResumeFile && (
-              <p className="mt-2 text-amber-600 text-sm">
-                Please select one of the resumes above to proceed.
-              </p>
-            )}
           </div>
         )}
 
-        {/* Step C: Display Extracted Experiences with Optimize button */}
+        {/* Update the Extracted Experiences section styling */}
         {extractedExperiences.length > 0 && (
-          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Extracted Experiences</h2>
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Resume Experience Entries
+            </h2>
+            
             {extractedExperiences.map((exp, expIndex) => (
-              <div key={expIndex} className="mb-6 border-b border-gray-300 pb-2">
-                <p className="text-md text-gray-800 mb-1">
-                  <strong>Job Title:</strong> {exp.jobTitle || "N/A"}
-                </p>
-                <p className="text-md text-gray-800 mb-1">
-                  <strong>Company:</strong> {exp.company || "N/A"}
-                </p>
-                <p className="text-md text-gray-800 mb-1">
-                  <strong>Dates:</strong> {exp.dateRange || "N/A"}
-                </p>
-                <p className="text-md text-gray-800 mb-1">
-                  <strong>Location:</strong> {exp.location || "N/A"}
-                </p>
+              <div key={expIndex} className="mb-6 bg-gray-900 border border-gray-700 p-4 rounded-lg">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-200">{exp.jobTitle || "N/A"}</h3>
+                    <h4 className="text-md font-medium text-gray-300">{exp.company || "N/A"}</h4>
+                    <div className="flex mt-1 text-sm text-gray-400">
+                      <span>{exp.dateRange || "N/A"}</span>
+                      {exp.location && <span className="ml-3">{exp.location}</span>}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <button
+                      className={`px-3 py-1.5 rounded text-sm font-medium ${
+                        experienceChangeSets[expIndex]?.status === "completed" 
+                          ? "bg-gray-700 text-gray-400 cursor-not-allowed" 
+                          : "bg-green-700 hover:bg-green-600 text-white"
+                      }`}
+                      onClick={() => handleOptimizeExperience(expIndex)}
+                      disabled={experienceChangeSets[expIndex]?.status === "completed"}
+                    >
+                      {experienceChangeSets[expIndex]?.status === "completed" 
+                        ? "Optimization Completed" 
+                        : "Optimize Experience"}
+                    </button>
+                  </div>
+                </div>
+                
                 {exp.bullets && exp.bullets.length > 0 && (
-                  <ul className="list-disc list-inside ml-4 mt-1">
+                  <ul className="mt-3 space-y-1 list-disc list-inside ml-2">
                     {exp.bullets.map((b: string, i: number) => (
-                      <li key={i} className="text-sm text-gray-800 mb-1">
+                      <li key={i} className="text-sm text-gray-300">
                         {b}
                       </li>
                     ))}
                   </ul>
                 )}
-                {/* Show "Optimize This Experience" button only if not already optimized or in progress */}
-                <button
-                  className={`mt-2 px-3 py-1 ${
-                    experienceChangeSets[expIndex]?.status === "completed" 
-                      ? "bg-gray-500" 
-                      : "bg-green-600 hover:bg-green-700"
-                  } text-white rounded`}
-                  onClick={() => handleOptimizeExperience(expIndex)}
-                  disabled={experienceChangeSets[expIndex]?.status === "completed"}
-                >
-                  {experienceChangeSets[expIndex]?.status === "completed" 
-                    ? "Optimization Completed" 
-                    : "Optimize This Experience"}
-                </button>
               </div>
             ))}
           </div>
@@ -680,34 +798,46 @@ export default function HomePage() {
 
         {/* Step D: Bullet-level customization flow for the selected experience */}
         {customizationFlow === "inProgress" && currentExperienceIndex !== null && experienceChangeSets[currentExperienceIndex] && (
-          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
-              Bullet Suggestions for Experience #{currentExperienceIndex + 1}
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              Bullet Suggestions
             </h2>
-            <p className="text-gray-800 mb-2">
-              Reviewing suggestion {experienceChangeSets[currentExperienceIndex].currentBulletChangeIndex + 1} of {experienceChangeSets[currentExperienceIndex].bulletChanges.length}
+            <p className="text-gray-300 mb-4">
+              Experience #{currentExperienceIndex + 1}: Reviewing suggestion {experienceChangeSets[currentExperienceIndex].currentBulletChangeIndex + 1} of {experienceChangeSets[currentExperienceIndex].bulletChanges.length}
             </p>
-            <div className="mb-4">
-              <p className="text-gray-800 font-semibold">Original Bullet:</p>
-              <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
+            
+            <div className="bg-gray-900 border border-gray-700 p-4 rounded-lg mb-4">
+              <p className="text-gray-300 font-semibold mb-2">Original Bullet:</p>
+              <div className="bg-gray-800 border border-gray-600 p-3 rounded text-gray-400 mb-4">
                 {experienceChangeSets[currentExperienceIndex].bulletChanges[experienceChangeSets[currentExperienceIndex].currentBulletChangeIndex].originalBullet}
-              </pre>
-              <p className="text-gray-800 font-semibold mt-2">Proposed New Bullet:</p>
-              <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
+              </div>
+              
+              <p className="text-gray-300 font-semibold mb-2">Proposed New Bullet:</p>
+              <div className="bg-blue-900/20 border border-blue-700/50 p-3 rounded text-blue-300">
                 {experienceChangeSets[currentExperienceIndex].bulletChanges[experienceChangeSets[currentExperienceIndex].currentBulletChangeIndex].newBullet}
-              </pre>
+              </div>
             </div>
+            
             <div className="flex gap-4">
               <button
                 onClick={handleAcceptBulletChange}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-all transform hover:scale-[1.02] flex items-center"
               >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
                 Accept
               </button>
               <button
                 onClick={handleSkipBulletChange}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-all flex items-center"
               >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 17l-4 4m0 0l-4-4m4 4V3" />
+                </svg>
                 Skip
               </button>
             </div>
@@ -716,119 +846,201 @@ export default function HomePage() {
 
         {/* Skills Optimization Section */}
         {scoreResults && !currentSkills && experienceChangeSets.some(set => set?.status === "completed") && (
-          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Skills Optimization</h2>
-            <p className="text-gray-800 mb-4">
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              Skills Optimization
+            </h2>
+            <p className="text-gray-300 mb-4">
               Now that you've optimized the experience section, let's optimize your skills section based on the job description.
             </p>
             <button
               onClick={handleLoadSkills}
               disabled={loadingSkills}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all transform hover:scale-[1.02] flex items-center"
             >
-              {loadingSkills ? "Loading Skills..." : "Load Skills Section"}
+              {loadingSkills ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Loading Skills...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Load Skills Section
+                </>
+              )}
             </button>
           </div>
         )}
 
-        {/* Display Current Skills */}
+        {/* Update the Current Skills section styling */}
         {currentSkills && !skillsOptimized && (
-          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Current Skills</h2>
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              Current Skills
+            </h2>
             
-            {currentSkills.categories.map((category: any, index: number) => (
-              <div key={index} className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">{category.name}:</h3>
-                <p className="text-gray-800">{category.skills.join(", ")}</p>
-              </div>
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentSkills.categories.map((category: any, index: number) => (
+                <div key={index} className="bg-gray-900 border border-gray-700 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-300 mb-2">{category.name}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {category.skills.map((skill: string, i: number) => (
+                      <span key={i} className="px-2 py-1 bg-gray-800 border border-gray-600 rounded-md text-gray-300 text-sm">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
             
             <button
               onClick={handleOptimizeSkills}
               disabled={loadingSkills}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="mt-6 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition-all transform hover:scale-[1.02] flex items-center"
             >
-              {loadingSkills ? "Optimizing Skills..." : "Optimize Skills For Job"}
+              {loadingSkills ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Optimizing Skills...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Optimize Skills For Job
+                </>
+              )}
             </button>
           </div>
         )}
 
-        {/* Display Optimized Skills */}
+        {/* Update the Optimized Skills section styling */}
         {optimizedSkills && (
-          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Optimized Skills</h2>
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+              Optimized Skills
+            </h2>
             
-            {optimizedSkills.categories.map((category: any, index: number) => (
-              <div key={index} className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">{category.name}:</h3>
-                <p className="text-gray-800">{category.skills.join(", ")}</p>
-              </div>
-            ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {optimizedSkills.categories.map((category: any, index: number) => (
+                <div key={index} className="bg-gray-900 border border-gray-700 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-300 mb-2">{category.name}</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {category.skills.map((skill: string, i: number) => (
+                      <span key={i} className="px-2 py-1 bg-gray-800 border border-gray-600 rounded-md text-gray-300 text-sm">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
             
             <button
               onClick={handleAcceptSkills}
               disabled={skillsAccepted}
-              className={`mt-4 px-4 py-2 ${
+              className={`mt-6 px-4 py-2 rounded ${
                 skillsAccepted 
-                  ? "bg-gray-500" 
-                  : "bg-green-600 hover:bg-green-700"
-              } text-white rounded`}
+                  ? "bg-gray-700 text-gray-400 cursor-not-allowed" 
+                  : "bg-green-600 hover:bg-green-700 text-white transition-all transform hover:scale-[1.02]"
+              } flex items-center justify-center`}
             >
-              {skillsAccepted ? "Changes Accepted" : "Accept Optimized Skills"}
+              {skillsAccepted ? (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Changes Accepted
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Accept Optimized Skills
+                </>
+              )}
             </button>
           </div>
         )}
 
         {/* Add a summary section that shows all accepted changes and inject button */}
+        {/* Update the Accepted Changes Summary section styling */}
         {experienceChangeSets.some(set => set?.acceptedChanges?.length > 0) && customizationFlow !== "inProgress" && (
-          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Accepted Changes Summary</h2>
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              Accepted Changes Summary
+            </h2>
             
             {experienceChangeSets.map((set, expIndex) => (
               set?.acceptedChanges?.length > 0 && (
-                <div key={expIndex} className="mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800">Experience #{expIndex + 1}</h3>
-                  <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
-                    <ul className="list-disc list-inside ml-4">
-                      {set.acceptedChanges.map((change, index) => (
-                        <li key={index} className="text-sm text-gray-900 mb-2">
-                          <p><strong>Original:</strong> {change.originalBullet}</p>
-                          <p><strong>New:</strong> {change.newBullet}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  </pre>
+                <div key={expIndex} className="mb-4 bg-gray-900 border border-gray-700 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-300 mb-2">Experience #{expIndex + 1}</h3>
+                  <div className="divide-y divide-gray-700">
+                    {set.acceptedChanges.map((change, index) => (
+                      <div key={index} className="py-3">
+                        <p className="text-gray-400 mb-2">
+                          <span className="font-medium text-gray-300">Original:</span> {change.originalBullet}
+                        </p>
+                        <p className="text-green-400">
+                          <span className="font-medium">New:</span> {change.newBullet}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )
             ))}
 
             {/* Add this new section for accepted skills */}
             {acceptedSkills && (
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">Skills Updates</h3>
-                <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
-                  {acceptedSkills.categories.map((category: any, index: number) => (
-                    <div key={index} className="mb-2">
-                      <strong>{category.name}:</strong> {category.skills.join(", ")}
-                    </div>
-                  ))}
-                </pre>
+              <div className="mb-4 bg-gray-900 border border-gray-700 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-300 mb-2">Skills Updates</h3>
+                {acceptedSkills.categories.map((category: any, index: number) => (
+                  <div key={index} className="mb-2">
+                    <strong className="text-gray-200">{category.name}:</strong> 
+                    <span className="text-green-400">{category.skills.join(", ")}</span>
+                  </div>
+                ))}
               </div>
             )}
             
-            <div className="mt-4 flex flex-col md:flex-row gap-2">
+            <div className="mt-6 bg-gray-900 border border-gray-700 p-4 rounded-lg flex flex-col md:flex-row gap-4">
               <div className="flex-grow">
-                <label className="block text-gray-800 font-semibold mb-1">
+                <label className="block text-gray-300 font-semibold mb-1">
                   Save Resume As:
                 </label>
                 <input
                   type="text"
                   value={newFileName}
                   onChange={(e) => setNewFileName(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:ring-indigo-300 text-gray-900"
+                  className="w-full p-2 bg-gray-800 border border-gray-600 rounded text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="company_position"
                 />
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-gray-400 mt-1">
                   .tex extension will be added automatically
                 </p>
               </div>
@@ -836,11 +1048,11 @@ export default function HomePage() {
                 <button
                   onClick={handleInjectIntoLatex}
                   disabled={!acceptedSkills && experienceChangeSets.some(set => set?.status === "completed")}
-                  className={`px-4 py-2 ${
+                  className={`px-4 py-2 rounded h-10 whitespace-nowrap ${
                     !acceptedSkills && experienceChangeSets.some(set => set?.status === "completed")
-                    ? "bg-gray-400 cursor-not-allowed" 
-                    : "bg-indigo-600 hover:bg-indigo-700"
-                  } text-white rounded h-10 whitespace-nowrap`}
+                    ? "bg-gray-600 cursor-not-allowed" 
+                    : "bg-blue-600 hover:bg-blue-500 transition-all transform hover:scale-[1.02]"
+                  } text-white`}
                 >
                   {!acceptedSkills && experienceChangeSets.some(set => set?.status === "completed")
                     ? "Optimize Skills First" 
@@ -849,151 +1061,224 @@ export default function HomePage() {
                 </button>
               </div>
             </div>
-            {!acceptedSkills && experienceChangeSets.some(set => set?.status === "completed") && (
-              <p className="text-xs text-orange-600 mt-1">
-                Please optimize and accept skills changes before injecting into LaTeX
-              </p>
-            )}
           </div>
         )}
 
         {/* Step E: Final accepted changes summary */}
         {customizationFlow === "completed" && (
-          <div className="mt-8 bg-gray-200 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Customization Flow Completed</h2>
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Customization Flow Completed
+            </h2>
             {experienceChangeSets.flatMap(set => set?.acceptedChanges || []).length > 0 ? (
               <>
-                <pre className="text-sm text-gray-900 bg-gray-50 p-2 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
-                  <div className="mt-4"></div>
-                  <h3 className="text-lg font-semibold text-gray-800">Accepted Bullet Changes:</h3>
-                  <ul className="list-disc list-inside ml-4">
+                <div className="bg-gray-900 border border-gray-700 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold text-gray-300 mb-3">Accepted Bullet Changes:</h3>
+                  <ul className="space-y-2">
                     {experienceChangeSets.flatMap(set => set?.acceptedChanges || []).map((change, index) => (
-                      <li key={index} className="text-sm text-gray-900 mb-2">
-                        <p><strong>Original Bullet:</strong> {change.originalBullet}</p>
-                        <p><strong>New Bullet:</strong> {change.newBullet}</p>
+                      <li key={index} className="border-b border-gray-700 pb-2">
+                        <p className="text-gray-400 mb-1">
+                          <span className="font-medium text-gray-300">Original:</span> {change.originalBullet}
+                        </p>
+                        <p className="text-green-400">
+                          <span className="font-medium">New:</span> {change.newBullet}
+                        </p>
                       </li>
                     ))}
                   </ul>
-                </pre>
-                <p className="text-gray-800 mt-2">
+                </div>
+                <p className="text-gray-300 mt-4">
                   Integrate these accepted bullet changes or click below to inject them into your LaTeX file:
                 </p>
                 <button
                   onClick={handleInjectIntoLatex}
-                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors"
+                  className="mt-4 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center"
                 >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4 4m0 0l-4 4m4-4H4" />
+                  </svg>
                   Inject Into LaTeX
                 </button>
               </>
             ) : (
-              <p className="text-gray-800">No bullet changes were accepted.</p>
+              <p className="text-gray-300">No bullet changes were accepted.</p>
             )}
           </div>
         )}
 
         {/* Step F: Display updated LaTeX */}
         {updatedLatex && (
-          <div className="mt-8 bg-gray-100 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Updated .tex content</h2>
-            <pre className="text-xs text-gray-800 bg-white p-4 rounded border border-gray-300 overflow-auto whitespace-pre-wrap break-words">
-              {updatedLatex}
-            </pre>
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+              LaTeX Source Code
+            </h2>
+            <div className="bg-gray-900 border border-gray-700 rounded-lg">
+              <pre className="text-xs text-gray-300 p-4 overflow-auto max-h-96 whitespace-pre-wrap break-words">
+                {updatedLatex}
+              </pre>
+            </div>
           </div>
         )}
 
         {/* Step G: Display generated PDF */}
+        {/* Enhanced PDF viewer */}
         {pdfUrl && (
-          <div className="mt-8 bg-gray-100 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Generated PDF</h2>
-            <iframe
-              src={pdfUrl}
-              width="100%"
-              height="600px"
-              className="border border-gray-300 rounded"
-              title="Resume PDF"
-            ></iframe>
-            <div className="mt-4">
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Final Resume
+            </h2>
+            <div className="bg-white p-1 rounded-lg shadow-inner">
+              <iframe
+                src={pdfUrl}
+                width="100%"
+                height="700px"
+                className="rounded"
+                title="Resume PDF"
+              ></iframe>
+            </div>
+            <div className="mt-4 flex justify-center">
               <a 
                 href={pdfUrl} 
-                download={`resume_${Date.now()}.pdf`}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                download={`SKompXcel_Calibrated_Resume_${Date.now()}.pdf`}
+                className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-all transform hover:scale-105 flex items-center"
               >
-                Download PDF
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Optimized Resume
               </a>
             </div>
           </div>
         )}
 
-        {/* Add this right after the PDF viewer section, before the final closing divs */}
+        {/* Score improvement section with improved visualization */}
         {pdfUrl && originalScore && newScore && (
-          <div className="mt-8 bg-gray-100 p-4 rounded shadow">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Resume Score Improvement</h2>
+          <div className="mt-8 bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-semibold text-white mb-6 flex items-center">
+              <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+              Resume Optimization Results
+            </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-4 rounded shadow">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Original Resume</h3>
-                <div className="flex items-center mb-2">
-                  <div className="w-full bg-gray-200 rounded-full h-4 mr-2">
+              <div className="bg-gray-900 border border-gray-700 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-300 mb-3">Original Resume</h3>
+                <div className="flex items-center mb-3">
+                  <div className="w-full bg-gray-700 rounded-full h-4 mr-2">
                     <div 
-                      className="bg-blue-600 h-4 rounded-full" 
+                      className="bg-blue-600 h-4 rounded-full transition-all duration-1000 ease-out"
                       style={{ width: `${originalScore.scorePercent}%` }}
                     ></div>
                   </div>
-                  <span className="text-lg font-bold">{originalScore.scorePercent}%</span>
+                  <span className="text-lg font-bold text-blue-400 w-10 text-center">{originalScore.scorePercent}%</span>
                 </div>
-                <p className="text-gray-700">
+                <p className="text-gray-400">
                   <span className="font-semibold">Keywords matched:</span> {originalScore.matchCount} of {originalScore.totalKeywords}
                 </p>
               </div>
               
-              <div className="bg-white p-4 rounded shadow">
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Optimized Resume</h3>
-                <div className="flex items-center mb-2">
-                  <div className="w-full bg-gray-200 rounded-full h-4 mr-2">
+              <div className="bg-gray-900 border border-gray-700 p-4 rounded-lg relative overflow-hidden">
+                {improvementPercent > 0 && (
+                  <div className="absolute top-2 right-2 bg-green-600/20 border border-green-500 rounded-full px-2 py-0.5 text-xs font-bold text-green-400">
+                    +{improvementPercent}%
+                  </div>
+                )}
+                <h3 className="text-lg font-semibold text-gray-300 mb-3">Optimized Resume</h3>
+                <div className="flex items-center mb-3">
+                  <div className="w-full bg-gray-700 rounded-full h-4 mr-2">
                     <div 
-                      className="bg-green-600 h-4 rounded-full" 
+                      className="bg-green-500 h-4 rounded-full transition-all duration-1000 ease-out"
                       style={{ width: `${newScore.scorePercent}%` }}
                     ></div>
                   </div>
-                  <span className="text-lg font-bold">{newScore.scorePercent}%</span>
+                  <span className="text-lg font-bold text-green-400 w-10 text-center">{newScore.scorePercent}%</span>
                 </div>
-                <p className="text-gray-700">
+                <p className="text-gray-400">
                   <span className="font-semibold">Keywords matched:</span> {newScore.matchCount} of {newScore.totalKeywords}
                 </p>
               </div>
             </div>
             
-            <div className="mt-4 bg-white p-4 rounded shadow">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                Improvement: 
-                <span className={`ml-2 ${improvementPercent > 0 ? 'text-green-600' : improvementPercent < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                  {improvementPercent > 0 ? '+' : ''}{improvementPercent}%
-                </span>
-              </h3>
-              
-              {newScore.matchedKeywords.length > originalScore.matchedKeywords.length && (
-                <div className="mt-3">
-                  <h4 className="font-semibold text-gray-800">Newly Matched Keywords:</h4>
-                  <ul className="mt-1 list-disc list-inside">
+            {/* Keyword details section */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Newly matched keywords */}
+              <div className="bg-gray-900 border border-gray-700 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-300 mb-3 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Newly Matched Keywords
+                </h3>
+                {newScore.matchedKeywords && originalScore.matchedKeywords && 
+                 newScore.matchedKeywords.filter(kw => !originalScore.matchedKeywords.includes(kw)).length > 0 ? (
+                  <ul className="space-y-1">
                     {newScore.matchedKeywords
                       .filter(kw => !originalScore.matchedKeywords.includes(kw))
                       .map((keyword, idx) => (
-                        <li key={idx} className="text-green-700">{keyword}</li>
+                        <li key={idx} className="text-green-400 flex items-center">
+                          <svg className="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          {keyword}
+                        </li>
                       ))}
                   </ul>
-                </div>
-              )}
+                ) : (
+                  <p className="text-gray-500 italic">No new keywords matched</p>
+                )}
+              </div>
               
-              {newScore.unmatchedKeywords.length > 0 && (
-                <div className="mt-3">
-                  <h4 className="font-semibold text-gray-800">Still Unmatched Keywords:</h4>
-                  <ul className="mt-1 list-disc list-inside">
+              {/* Still unmatched keywords */}
+              <div className="bg-gray-900 border border-gray-700 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-300 mb-3 flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  Still Unmatched Keywords
+                </h3>
+                {newScore.unmatchedKeywords && newScore.unmatchedKeywords.length > 0 ? (
+                  <ul className="space-y-1">
                     {newScore.unmatchedKeywords.map((keyword, idx) => (
-                      <li key={idx} className="text-gray-700">{keyword}</li>
+                      <li key={idx} className="text-amber-300 flex items-center">
+                        <svg className="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {keyword}
+                      </li>
                     ))}
                   </ul>
-                </div>
-              )}
+                ) : (
+                  <p className="text-gray-500 italic">All keywords matched! 🎉</p>
+                )}
+              </div>
+            </div>
+            
+            {/* Improvement summary */}
+            <div className="mt-6 bg-gray-900 border border-gray-700 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-300 mb-2">
+                Improvement Summary
+              </h3>
+              <p className="text-gray-400">
+                Your resume's keyword match score has {improvementPercent > 0 ? 'improved by' : 'changed by'} 
+                <span className={`ml-1 font-bold ${improvementPercent > 0 ? 'text-green-400' : improvementPercent < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                  {improvementPercent > 0 ? '+' : ''}{improvementPercent}%
+                </span>
+              </p>
+              <p className="text-gray-400 mt-1">
+                {improvementPercent > 0 
+                  ? `You've successfully tailored your resume to better match the job requirements.`
+                  : `The changes you've made maintained your original keyword matching.`}
+              </p>
             </div>
           </div>
         )}
