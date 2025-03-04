@@ -476,23 +476,37 @@ export default function HomePage() {
   }, [extractedCompany, extractedPosition]);
 
   return (
-    <main className="min-h-screen bg-gray-900 p-8">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-white">
-          Resume Tailoring System - Extract Full Experiences
-        </h1>
-        <div className="bg-yellow-100 p-4 rounded shadow mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Instructions</h2>
-          <ol className="list-decimal list-inside ml-4 text-gray-800">
-            <li className="mb-2">Upload a LaTeX copy of your resume before proceeding.</li>
-            <li className="mb-2">Paste the job description into the provided textarea.</li>
-            <li className="mb-2">Click the "Parse & Score Resumes" button to analyze the job description and score your resumes.</li>
-            <li className="mb-2">Review the parsed job description data and resume scoring results.</li>
-            <li className="mb-2">Click "Load Experiences" to extract full experiences from the best-matching resume.</li>
-            <li className="mb-2">Optimize each experience by clicking the "Optimize This Experience" button.</li>
-            <li className="mb-2">Accept or skip suggested bullet point changes for the selected experience.</li>
-            <li className="mb-2">Inject accepted changes into the LaTeX resume file by clicking "Inject Into LaTeX".</li>
-            <li className="mb-2">View and download the generated PDF of your updated resume.</li>
+    <main className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-8">
+      <div className="max-w-4xl mx-auto">
+        <header className="mb-8 flex flex-col items-center md:flex-row md:justify-between">
+          <div className="flex items-center">
+            <h1 className="text-3xl font-bold text-white">
+              SKomp<span className="text-blue-500">X</span>cel <span className="font-light">Calibrate</span>
+            </h1>
+          </div>
+          <div className="mt-4 md:mt-0">
+            <a href="/gallery" className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors">
+              Resume Gallery
+            </a>
+          </div>
+        </header>
+        <div className="bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg mb-8 transform transition-all hover:shadow-xl">
+          <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            How It Works
+          </h2>
+          <ol className="list-decimal list-inside ml-4 text-gray-300 space-y-2">
+            <li>Upload a LaTeX copy of your resume before proceeding.</li>
+            <li>Paste the job description in the field below.</li>
+            <li>Click the "Parse & Score Resumes" button to analyze the job description and score your resumes.</li>
+            <li>Review the parsed job description data and resume scoring results.</li>
+            <li>Click "Load Experiences" to extract full experiences from the best-matching resume.</li>
+            <li>Optimize each experience by clicking the "Optimize This Experience" button.</li>
+            <li>Accept or skip suggested bullet point changes for the selected experience.</li>
+            <li>Inject accepted changes into the LaTeX resume file by clicking "Inject Into LaTeX".</li>
+            <li>View and download the generated PDF of your updated resume.</li>
           </ol>
         </div>
 
